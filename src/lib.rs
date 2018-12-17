@@ -5,17 +5,28 @@ use std::fs;
 use std::io::prelude::*;
 use std::io::SeekFrom;
 
+pub enum OpenType {
+    OpenAndCreate,
+    Open,
+}
+
 pub struct BinaryReader {
     file: fs::File,
 }
 
 impl BinaryReader {
-    pub fn new(filepath: &str) -> BinaryReader {
-        let file = fs::File::open(filepath);
+    pub fn new(filepath: &str, open_type: OpenType) -> BinaryReader {
+        let mut file;
+
+        match open_type {
+            OpenType::OpenAndCreate => file = fs::File::create(filepath),
+            OpenType::Open => file = fs::File::open(filepath),
+        }
 
         if !file.is_ok() {
             panic!("Failed to open file: {}", filepath);
         }
+
         let file = file.unwrap();
 
         BinaryReader { file: file }
@@ -126,12 +137,18 @@ pub struct BinaryWriter {
 }
 
 impl BinaryWriter {
-    pub fn new(filepath: &str) -> BinaryWriter {
-        let file = fs::File::open(filepath);
+    pub fn new(filepath: &str, open_type: OpenType) -> BinaryWriter {
+        let mut file;
+
+        match open_type {
+            OpenType::OpenAndCreate => file = fs::File::create(filepath),
+            OpenType::Open => file = fs::File::open(filepath),
+        }
 
         if !file.is_ok() {
             panic!("Failed to open file: {}", filepath);
         }
+
         let file = file.unwrap();
 
         BinaryWriter { file: file }
