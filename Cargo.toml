@@ -1,5 +1,5 @@
 [package]
-name = "binary-rs"
+name = "binaryRW"
 version = "0.0.1"
 authors = ["Mathias Danielsen <mathiasda98@hotmail.com>"]
 edition = "2018"
