@@ -112,6 +112,13 @@ impl BinaryReader {
 
         value
     }
+
+    pub fn read_bytes(&mut self, length: u64) -> Vec<u8> {
+        let mut buffer: Vec<u8> = vec![0; length as usize];
+        self.file.read(&mut buffer).unwrap();
+
+        buffer
+    }
 }
 
 pub struct BinaryWriter {
@@ -180,6 +187,10 @@ impl BinaryWriter {
 
     pub fn write_i8(&mut self, value: i8) {
         let data: Vec<u8> = serialize(&value).unwrap();
+        self.file.write(&data).unwrap();
+    }
+
+    pub fn write_bytes(&mut self, data: Vec<u8>) {
         self.file.write(&data).unwrap();
     }
 }
