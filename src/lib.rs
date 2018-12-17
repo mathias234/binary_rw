@@ -33,11 +33,23 @@ impl BinaryReader {
     }
 
     pub fn seek_to(&mut self, position: u64) -> u64 {
-        self.file.seek(SeekFrom::Start(position)).unwrap()
+        let result = self.file.seek(SeekFrom::Start(position));
+
+        if !result.is_ok() {
+            panic!(result.err().unwrap());
+        }
+
+        result.unwrap()
     }
 
     pub fn get_cur_pos(&mut self) -> u64 {
-        self.file.seek(SeekFrom::Current(0)).unwrap()
+        let result = self.file.seek(SeekFrom::Current(0));
+
+        if !result.is_ok() {
+            panic!(result.err().unwrap());
+        }
+
+        result.unwrap()
     }
 
     pub fn read_string(&mut self) -> String {
@@ -155,11 +167,23 @@ impl BinaryWriter {
     }
 
     pub fn seek_to(&mut self, position: u64) -> u64 {
-        self.file.seek(SeekFrom::Start(position)).unwrap()
+        let result = self.file.seek(SeekFrom::Start(position));
+
+        if !result.is_ok() {
+            panic!(result.err().unwrap());
+        }
+
+        result.unwrap()
     }
 
     pub fn get_cur_pos(&mut self) -> u64 {
-        self.file.seek(SeekFrom::Current(0)).unwrap()
+        let result = self.file.seek(SeekFrom::Current(0));
+
+        if !result.is_ok() {
+            panic!(result.err().unwrap());
+        }
+
+        result.unwrap()
     }
 
     pub fn write_string(&mut self, value: String) {
