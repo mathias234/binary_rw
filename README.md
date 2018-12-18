@@ -1,5 +1,5 @@
 # binary-rs
-A binary reader/writer for the rust language
+A binary reader/writer for the rust language, with a similar syntax to the C# BinaryWriter and BinaryReader
 
 Example code for reading
 ```rust
