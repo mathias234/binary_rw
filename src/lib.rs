@@ -56,6 +56,46 @@ impl BinaryReader {
         deserialize_from(&self.file).unwrap()
     }
 
+    pub fn read_f32(&mut self) -> f32 {
+        let mut buffer: Vec<u8> = vec![0; 8];
+
+        self.file.read(&mut buffer).unwrap();
+
+        let value: f32 = deserialize(&buffer).unwrap();
+
+        value
+    }
+
+    pub fn read_f64(&mut self) -> f64 {
+        let mut buffer: Vec<u8> = vec![0; 8];
+
+        self.file.read(&mut buffer).unwrap();
+
+        let value: f64 = deserialize(&buffer).unwrap();
+
+        value
+    }
+
+    pub fn read_isize(&mut self) -> isize {
+        let mut buffer: Vec<u8> = vec![0; 8];
+
+        self.file.read(&mut buffer).unwrap();
+
+        let value: isize = deserialize(&buffer).unwrap();
+
+        value
+    }
+
+    pub fn read_usize(&mut self) -> usize {
+        let mut buffer: Vec<u8> = vec![0; 8];
+
+        self.file.read(&mut buffer).unwrap();
+
+        let value: usize = deserialize(&buffer).unwrap();
+
+        value
+    }
+
     pub fn read_u64(&mut self) -> u64 {
         let mut buffer: Vec<u8> = vec![0; 8];
 
@@ -187,6 +227,26 @@ impl BinaryWriter {
     }
 
     pub fn write_string(&mut self, value: String) {
+        let data: Vec<u8> = serialize(&value).unwrap();
+        self.file.write(&data).unwrap();
+    }
+
+    pub fn write_f32(&mut self, value: f32) {
+        let data: Vec<u8> = serialize(&value).unwrap();
+        self.file.write(&data).unwrap();
+    }
+
+    pub fn write_f64(&mut self, value: f64) {
+        let data: Vec<u8> = serialize(&value).unwrap();
+        self.file.write(&data).unwrap();
+    }
+
+    pub fn write_isize(&mut self, value: isize) {
+        let data: Vec<u8> = serialize(&value).unwrap();
+        self.file.write(&data).unwrap();
+    }
+
+    pub fn write_usize(&mut self, value: usize) {
         let data: Vec<u8> = serialize(&value).unwrap();
         self.file.write(&data).unwrap();
     }
