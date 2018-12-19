@@ -1,8 +1,11 @@
 # binary-rs
+
 A binary reader/writer for the rust language, with a similar syntax to the C# BinaryWriter and BinaryReader
 
 #### Examples
+
 Example code for reading
+
 ```rust
 extern crate binary_rw;
 use binary_rw::{BinaryReader, OpenType};
@@ -27,5 +30,7 @@ fn main() {
   binary_file.write_f32(value);
 }
 ```
+
 #### TODO
+
 - Multiple underlying streams like Memory Stream and File Stream (only file stream currently)
