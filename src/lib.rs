@@ -57,7 +57,7 @@ impl BinaryReader {
     }
 
     pub fn read_f32(&mut self) -> f32 {
-        let mut buffer: Vec<u8> = vec![0; 8];
+        let mut buffer: Vec<u8> = vec![0; 4];
 
         self.file.read(&mut buffer).unwrap();
 
