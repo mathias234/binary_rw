@@ -14,173 +14,278 @@ pub struct BinaryReader {
     file: fs::File,
 }
 
+#[derive(Debug)]
+pub enum BinaryError {
+    FSError(std::io::Error),
+    BinCodeErr(Box<bincode::ErrorKind>),
+}
+
 impl BinaryReader {
-    pub fn new(filepath: &str, open_type: OpenType) -> BinaryReader {
-        let mut file;
+    pub fn new(filepath: &str, open_type: OpenType) -> Result<BinaryReader, BinaryError> {
+        let file;
 
         match open_type {
             OpenType::OpenAndCreate => file = fs::File::create(filepath),
             OpenType::Open => file = fs::File::open(filepath),
         }
 
-        if !file.is_ok() {
-            panic!("Failed to open file: {}", filepath);
+        match file {
+            Ok(f) => Ok(BinaryReader { file: f }),
+            Err(e) => Err(BinaryError::FSError(e)),
         }
-
-        let file = file.unwrap();
-
-        BinaryReader { file: file }
     }
 
-    pub fn seek_to(&mut self, position: u64) -> u64 {
+    pub fn seek_to(&mut self, position: u64) -> Result<u64, BinaryError> {
         let result = self.file.seek(SeekFrom::Start(position));
 
-        if !result.is_ok() {
-            panic!(result.err().unwrap());
+        match result {
+            Ok(r) => Ok(r),
+            Err(e) => Err(BinaryError::FSError(e)),
         }
-
-        result.unwrap()
     }
 
-    pub fn get_cur_pos(&mut self) -> u64 {
+    pub fn get_cur_pos(&mut self) -> Result<u64, BinaryError> {
         let result = self.file.seek(SeekFrom::Current(0));
 
-        if !result.is_ok() {
-            panic!(result.err().unwrap());
+        match result {
+            Ok(r) => Ok(r),
+            Err(e) => Err(BinaryError::FSError(e)),
         }
-
-        result.unwrap()
     }
 
-    pub fn read_string(&mut self) -> String {
-        deserialize_from(&self.file).unwrap()
+    pub fn read_string(&mut self) -> Result<String, BinaryError> {
+        let value = deserialize_from(&self.file);
+
+        match value {
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::BinCodeErr(e)),
+        }
     }
 
-    pub fn read_f32(&mut self) -> f32 {
+    pub fn read_f32(&mut self) -> Result<f32, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 4];
 
-        self.file.read(&mut buffer).unwrap();
+        let read = self.file.read(&mut buffer);
 
-        let value: f32 = deserialize(&buffer).unwrap();
+        match read {
+            Err(e) => return Err(BinaryError::FSError(e)),
+            _ => {}
+        };
 
-        value
+        let value = deserialize(&buffer);
+
+        match value {
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::BinCodeErr(e)),
+        }
     }
 
-    pub fn read_f64(&mut self) -> f64 {
+    pub fn read_f64(&mut self) -> Result<f64, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 8];
 
-        self.file.read(&mut buffer).unwrap();
+        let read = self.file.read(&mut buffer);
 
-        let value: f64 = deserialize(&buffer).unwrap();
+        match read {
+            Err(e) => return Err(BinaryError::FSError(e)),
+            _ => {}
+        };
 
-        value
+        let value = deserialize(&buffer);
+
+        match value {
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::BinCodeErr(e)),
+        }
     }
 
-    pub fn read_isize(&mut self) -> isize {
+    pub fn read_isize(&mut self) -> Result<isize, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 8];
 
-        self.file.read(&mut buffer).unwrap();
+        let read = self.file.read(&mut buffer);
 
-        let value: isize = deserialize(&buffer).unwrap();
+        match read {
+            Err(e) => return Err(BinaryError::FSError(e)),
+            _ => {}
+        };
 
-        value
+        let value = deserialize(&buffer);
+
+        match value {
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::BinCodeErr(e)),
+        }
     }
 
-    pub fn read_usize(&mut self) -> usize {
+    pub fn read_usize(&mut self) -> Result<usize, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 8];
 
-        self.file.read(&mut buffer).unwrap();
+        let read = self.file.read(&mut buffer);
 
-        let value: usize = deserialize(&buffer).unwrap();
+        match read {
+            Err(e) => return Err(BinaryError::FSError(e)),
+            _ => {}
+        };
 
-        value
+        let value = deserialize(&buffer);
+
+        match value {
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::BinCodeErr(e)),
+        }
     }
 
-    pub fn read_u64(&mut self) -> u64 {
+    pub fn read_u64(&mut self) -> Result<u64, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 8];
 
-        self.file.read(&mut buffer).unwrap();
+        let read = self.file.read(&mut buffer);
 
-        let value: u64 = deserialize(&buffer).unwrap();
+        match read {
+            Err(e) => return Err(BinaryError::FSError(e)),
+            _ => {}
+        };
 
-        value
+        let value = deserialize(&buffer);
+
+        match value {
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::BinCodeErr(e)),
+        }
     }
 
-    pub fn read_i64(&mut self) -> i64 {
+    pub fn read_i64(&mut self) -> Result<i64, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 8];
 
-        self.file.read(&mut buffer).unwrap();
+        let read = self.file.read(&mut buffer);
 
-        let value: i64 = deserialize(&buffer).unwrap();
+        match read {
+            Err(e) => return Err(BinaryError::FSError(e)),
+            _ => {}
+        };
 
-        value
+        let value = deserialize(&buffer);
+
+        match value {
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::BinCodeErr(e)),
+        }
     }
 
-    pub fn read_u32(&mut self) -> u32 {
+    pub fn read_u32(&mut self) -> Result<u32, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 4];
 
-        self.file.read(&mut buffer).unwrap();
+        let read = self.file.read(&mut buffer);
 
-        let value: u32 = deserialize(&buffer).unwrap();
+        match read {
+            Err(e) => return Err(BinaryError::FSError(e)),
+            _ => {}
+        };
 
-        value
+        let value = deserialize(&buffer);
+
+        match value {
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::BinCodeErr(e)),
+        }
     }
 
-    pub fn read_i32(&mut self) -> i32 {
+    pub fn read_i32(&mut self) -> Result<i32, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 4];
 
-        self.file.read(&mut buffer).unwrap();
+        let read = self.file.read(&mut buffer);
 
-        let value: i32 = deserialize(&buffer).unwrap();
+        match read {
+            Err(e) => return Err(BinaryError::FSError(e)),
+            _ => {}
+        };
 
-        value
+        let value = deserialize(&buffer);
+
+        match value {
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::BinCodeErr(e)),
+        }
     }
 
-    pub fn read_u16(&mut self) -> u16 {
+    pub fn read_u16(&mut self) -> Result<u16, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 2];
 
-        self.file.read(&mut buffer).unwrap();
+        let read = self.file.read(&mut buffer);
 
-        let value: u16 = deserialize(&buffer).unwrap();
+        match read {
+            Err(e) => return Err(BinaryError::FSError(e)),
+            _ => {}
+        };
 
-        value
+        let value = deserialize(&buffer);
+
+        match value {
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::BinCodeErr(e)),
+        }
     }
 
-    pub fn read_i16(&mut self) -> i16 {
+    pub fn read_i16(&mut self) -> Result<i16, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 2];
 
-        self.file.read(&mut buffer).unwrap();
+        let read = self.file.read(&mut buffer);
 
-        let value: i16 = deserialize(&buffer).unwrap();
+        match read {
+            Err(e) => return Err(BinaryError::FSError(e)),
+            _ => {}
+        };
 
-        value
+        let value = deserialize(&buffer);
+
+        match value {
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::BinCodeErr(e)),
+        }
     }
 
-    pub fn read_u8(&mut self) -> u8 {
+    pub fn read_u8(&mut self) -> Result<u8, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 1];
 
-        self.file.read(&mut buffer).unwrap();
+        let read = self.file.read(&mut buffer);
 
-        let value: u8 = deserialize(&buffer).unwrap();
+        match read {
+            Err(e) => return Err(BinaryError::FSError(e)),
+            _ => {}
+        };
 
-        value
+        let value = deserialize(&buffer);
+
+        match value {
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::BinCodeErr(e)),
+        }
     }
 
-    pub fn read_i8(&mut self) -> i8 {
+    pub fn read_i8(&mut self) -> Result<i8, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 1];
 
-        self.file.read(&mut buffer).unwrap();
+        let read = self.file.read(&mut buffer);
 
-        let value: i8 = deserialize(&buffer).unwrap();
+        match read {
+            Err(e) => return Err(BinaryError::FSError(e)),
+            _ => {}
+        };
 
-        value
+        let value = deserialize(&buffer);
+
+        match value {
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::BinCodeErr(e)),
+        }
     }
 
-    pub fn read_bytes(&mut self, length: u64) -> Vec<u8> {
+    pub fn read_bytes(&mut self, length: u64) -> Result<Vec<u8>, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; length as usize];
-        self.file.read(&mut buffer).unwrap();
+        let bytes = self.file.read(&mut buffer);
 
-        buffer
+        match bytes {
+            Ok(_) => Ok(buffer),
+            Err(e) => Err(BinaryError::FSError(e)),
+        }
     }
 }
 
@@ -189,109 +294,239 @@ pub struct BinaryWriter {
 }
 
 impl BinaryWriter {
-    pub fn new(filepath: &str, open_type: OpenType) -> BinaryWriter {
-        let mut file;
+    pub fn new(filepath: &str, open_type: OpenType) -> Result<BinaryWriter, BinaryError> {
+        let file;
 
         match open_type {
             OpenType::OpenAndCreate => file = fs::File::create(filepath),
             OpenType::Open => file = fs::File::open(filepath),
         }
 
-        if !file.is_ok() {
-            panic!("Failed to open file: {}", filepath);
+        match file {
+            Ok(f) => Ok(BinaryWriter { file: f }),
+            Err(e) => Err(BinaryError::FSError(e)),
         }
-
-        let file = file.unwrap();
-
-        BinaryWriter { file: file }
     }
 
-    pub fn seek_to(&mut self, position: u64) -> u64 {
+    pub fn seek_to(&mut self, position: u64) -> Result<u64, BinaryError> {
         let result = self.file.seek(SeekFrom::Start(position));
 
-        if !result.is_ok() {
-            panic!(result.err().unwrap());
+        match result {
+            Ok(seek) => Ok(seek),
+            Err(e) => Err(BinaryError::FSError(e)),
         }
-
-        result.unwrap()
     }
 
-    pub fn get_cur_pos(&mut self) -> u64 {
+    pub fn get_cur_pos(&mut self) -> Result<u64, BinaryError> {
         let result = self.file.seek(SeekFrom::Current(0));
 
-        if !result.is_ok() {
-            panic!(result.err().unwrap());
+        match result {
+            Ok(pos) => Ok(pos),
+            Err(e) => Err(BinaryError::FSError(e)),
         }
-
-        result.unwrap()
     }
 
-    pub fn write_string(&mut self, value: String) {
-        let data: Vec<u8> = serialize(&value).unwrap();
-        self.file.write(&data).unwrap();
+    pub fn write_string(&mut self, value: String) -> Option<BinaryError> {
+        let data = serialize(&value);
+
+        let data = match data {
+            Ok(d) => d,
+            Err(e) => return Some(BinaryError::BinCodeErr(e)),
+        };
+        let result = self.file.write(&data);
+
+        match result {
+            Err(e) => Some(BinaryError::FSError(e)),
+            _ => None,
+        }
     }
 
-    pub fn write_f32(&mut self, value: f32) {
-        let data: Vec<u8> = serialize(&value).unwrap();
-        self.file.write(&data).unwrap();
+    pub fn write_f32(&mut self, value: f32) -> Option<BinaryError> {
+        let data = serialize(&value);
+
+        let data = match data {
+            Ok(d) => d,
+            Err(e) => return Some(BinaryError::BinCodeErr(e)),
+        };
+        let result = self.file.write(&data);
+
+        match result {
+            Err(e) => Some(BinaryError::FSError(e)),
+            _ => None,
+        }
     }
 
-    pub fn write_f64(&mut self, value: f64) {
-        let data: Vec<u8> = serialize(&value).unwrap();
-        self.file.write(&data).unwrap();
+    pub fn write_f64(&mut self, value: f64) -> Option<BinaryError> {
+        let data = serialize(&value);
+
+        let data = match data {
+            Ok(d) => d,
+            Err(e) => return Some(BinaryError::BinCodeErr(e)),
+        };
+        let result = self.file.write(&data);
+
+        match result {
+            Err(e) => Some(BinaryError::FSError(e)),
+            _ => None,
+        }
     }
 
-    pub fn write_isize(&mut self, value: isize) {
-        let data: Vec<u8> = serialize(&value).unwrap();
-        self.file.write(&data).unwrap();
+    pub fn write_isize(&mut self, value: isize) -> Option<BinaryError> {
+        let data = serialize(&value);
+
+        let data = match data {
+            Ok(d) => d,
+            Err(e) => return Some(BinaryError::BinCodeErr(e)),
+        };
+        let result = self.file.write(&data);
+
+        match result {
+            Err(e) => Some(BinaryError::FSError(e)),
+            _ => None,
+        }
     }
 
-    pub fn write_usize(&mut self, value: usize) {
-        let data: Vec<u8> = serialize(&value).unwrap();
-        self.file.write(&data).unwrap();
+    pub fn write_usize(&mut self, value: usize) -> Option<BinaryError> {
+        let data = serialize(&value);
+
+        let data = match data {
+            Ok(d) => d,
+            Err(e) => return Some(BinaryError::BinCodeErr(e)),
+        };
+        let result = self.file.write(&data);
+
+        match result {
+            Err(e) => Some(BinaryError::FSError(e)),
+            _ => None,
+        }
     }
 
-    pub fn write_u64(&mut self, value: u64) {
-        let data: Vec<u8> = serialize(&value).unwrap();
-        self.file.write(&data).unwrap();
+    pub fn write_u64(&mut self, value: u64) -> Option<BinaryError> {
+        let data = serialize(&value);
+
+        let data = match data {
+            Ok(d) => d,
+            Err(e) => return Some(BinaryError::BinCodeErr(e)),
+        };
+        let result = self.file.write(&data);
+
+        match result {
+            Err(e) => Some(BinaryError::FSError(e)),
+            _ => None,
+        }
     }
 
-    pub fn write_i64(&mut self, value: i64) {
-        let data: Vec<u8> = serialize(&value).unwrap();
-        self.file.write(&data).unwrap();
+    pub fn write_i64(&mut self, value: i64) -> Option<BinaryError> {
+        let data = serialize(&value);
+
+        let data = match data {
+            Ok(d) => d,
+            Err(e) => return Some(BinaryError::BinCodeErr(e)),
+        };
+        let result = self.file.write(&data);
+
+        match result {
+            Err(e) => Some(BinaryError::FSError(e)),
+            _ => None,
+        }
     }
 
-    pub fn write_u32(&mut self, value: u32) {
-        let data: Vec<u8> = serialize(&value).unwrap();
-        self.file.write(&data).unwrap();
+    pub fn write_u32(&mut self, value: u32) -> Option<BinaryError> {
+        let data = serialize(&value);
+
+        let data = match data {
+            Ok(d) => d,
+            Err(e) => return Some(BinaryError::BinCodeErr(e)),
+        };
+        let result = self.file.write(&data);
+
+        match result {
+            Err(e) => Some(BinaryError::FSError(e)),
+            _ => None,
+        }
     }
 
-    pub fn write_i32(&mut self, value: i32) {
-        let data: Vec<u8> = serialize(&value).unwrap();
-        self.file.write(&data).unwrap();
+    pub fn write_i32(&mut self, value: i32) -> Option<BinaryError> {
+        let data = serialize(&value);
+
+        let data = match data {
+            Ok(d) => d,
+            Err(e) => return Some(BinaryError::BinCodeErr(e)),
+        };
+        let result = self.file.write(&data);
+
+        match result {
+            Err(e) => Some(BinaryError::FSError(e)),
+            _ => None,
+        }
     }
 
-    pub fn write_u16(&mut self, value: u16) {
-        let data: Vec<u8> = serialize(&value).unwrap();
-        self.file.write(&data).unwrap();
+    pub fn write_u16(&mut self, value: u16) -> Option<BinaryError> {
+        let data = serialize(&value);
+
+        let data = match data {
+            Ok(d) => d,
+            Err(e) => return Some(BinaryError::BinCodeErr(e)),
+        };
+        let result = self.file.write(&data);
+
+        match result {
+            Err(e) => Some(BinaryError::FSError(e)),
+            _ => None,
+        }
     }
 
-    pub fn write_i16(&mut self, value: i16) {
-        let data: Vec<u8> = serialize(&value).unwrap();
-        self.file.write(&data).unwrap();
+    pub fn write_i16(&mut self, value: i16) -> Option<BinaryError> {
+        let data = serialize(&value);
+
+        let data = match data {
+            Ok(d) => d,
+            Err(e) => return Some(BinaryError::BinCodeErr(e)),
+        };
+        let result = self.file.write(&data);
+
+        match result {
+            Err(e) => Some(BinaryError::FSError(e)),
+            _ => None,
+        }
     }
 
-    pub fn write_u8(&mut self, value: u8) {
-        let data: Vec<u8> = serialize(&value).unwrap();
-        self.file.write(&data).unwrap();
+    pub fn write_u8(&mut self, value: u8) -> Option<BinaryError> {
+        let data = serialize(&value);
+
+        let data = match data {
+            Ok(d) => d,
+            Err(e) => return Some(BinaryError::BinCodeErr(e)),
+        };
+        let result = self.file.write(&data);
+
+        match result {
+            Err(e) => Some(BinaryError::FSError(e)),
+            _ => None,
+        }
     }
 
-    pub fn write_i8(&mut self, value: i8) {
-        let data: Vec<u8> = serialize(&value).unwrap();
-        self.file.write(&data).unwrap();
+    pub fn write_i8(&mut self, value: i8) -> Option<BinaryError> {
+        let data = serialize(&value);
+
+        let data = match data {
+            Ok(d) => d,
+            Err(e) => return Some(BinaryError::BinCodeErr(e)),
+        };
+        let result = self.file.write(&data);
+
+        match result {
+            Err(e) => Some(BinaryError::FSError(e)),
+            _ => None,
+        }
     }
 
-    pub fn write_bytes(&mut self, data: Vec<u8>) {
-        self.file.write(&data).unwrap();
+    pub fn write_bytes(&mut self, data: Vec<u8>) -> Option<BinaryError> {
+        let result = self.file.write(&data);
+
+        match result {
+            Err(e) => Some(BinaryError::FSError(e)),
+            _ => None,
+        }
     }
 }

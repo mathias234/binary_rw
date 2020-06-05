@@ -11,10 +11,10 @@ extern crate binary_rw;
 use binary_rw::{BinaryReader, OpenType};
 
 fn main() {
-  let mut binary_file = BinaryReader::new("data.dat", OpenType::OpenAndCreate);
+  let mut binary_file = BinaryReader::new("data.dat", OpenType::OpenAndCreate).expect("Failed to create reader");
 
-  let read_value = binary_file.read_f32();
-  println(read_value);
+  let read_value = binary_file.read_f32().expect("Failed to write f32");
+  println!("{:?}", read_value);
 }
 ```
 
@@ -24,10 +24,10 @@ extern crate binary_rw;
 use binary_rw::{BinaryWriter, OpenType};
 
 fn main() {
-  let mut binary_file = BinaryWriter::new("data.dat", OpenType::Open);
+  let mut binary_file = BinaryWriter::new("data.dat", OpenType::Open).expect("Failed to create writer");
   
   let value: f32 = 30.5;
-  binary_file.write_f32(value);
+  binary_file.write_f32(value).expect("Failed to write f32");
 }
 ```
 

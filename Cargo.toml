@@ -1,6 +1,6 @@
 [package]
 name = "binary_rw"
-version = "0.1.2"
+version = "1.0.0"
 authors = ["Mathias Danielsen <mathiasda98@hotmail.com>"]
 edition = "2018"
 
@@ -11,4 +11,4 @@ keywords = ["binary", "reader", "writer"]
 license = "MIT"
 
 [dependencies]
-bincode = "1.0.1"
+bincode = "1.2.1"
