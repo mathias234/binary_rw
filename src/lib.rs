@@ -35,6 +35,15 @@ impl<'a> BinaryReader<'a> {
         BinaryReader { stream }
     }
 
+    pub fn seek_to(&mut self, to: u64) -> Result<u64, BinaryError> {
+        let result = self.stream.seek(to);
+
+        match result {
+            Ok(r) => Ok(r),
+            Err(e) => Err(BinaryError::StreamError(e)),
+        }
+    }
+
     pub fn get_cur_pos(&mut self) -> Result<u64, BinaryError> {
         let result = self.stream.tell();
 
@@ -282,6 +291,15 @@ pub struct BinaryWriter<'a> {
 impl<'a> BinaryWriter<'a> {
     pub fn new(stream: &'a mut impl Stream) -> BinaryWriter {
         BinaryWriter { stream }
+    }
+
+    pub fn seek_to(&mut self, to: u64) -> Result<u64, BinaryError> {
+        let result = self.stream.seek(to);
+
+        match result {
+            Ok(r) => Ok(r),
+            Err(e) => Err(BinaryError::StreamError(e)),
+        }
     }
 
     pub fn get_cur_pos(&mut self) -> Result<u64, BinaryError> {
