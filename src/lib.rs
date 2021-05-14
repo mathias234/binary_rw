@@ -1,74 +1,60 @@
 extern crate bincode;
 
-use bincode::{deserialize, deserialize_from, serialize};
-use std::fs;
-use std::io::prelude::*;
-use std::io::SeekFrom;
+use bincode::{deserialize, serialize};
 
-pub enum OpenType {
-    OpenAndCreate,
-    Open,
-}
+pub mod filestream;
 
-pub struct BinaryReader {
-    file: fs::File,
+pub struct BinaryReader<'a> {
+    stream: &'a mut dyn Stream,
 }
 
 #[derive(Debug)]
 pub enum BinaryError {
-    FSError(std::io::Error),
+    StreamError(StreamError),
     BinCodeErr(Box<bincode::ErrorKind>),
 }
 
-impl BinaryReader {
-    pub fn new(filepath: &str, open_type: OpenType) -> Result<BinaryReader, BinaryError> {
-        let file;
+#[derive(Debug)]
+pub enum StreamError {
+    OpenError,
+    WriteError,
+    ReadError,
+    SeekError,
+    TellError,
+}
 
-        match open_type {
-            OpenType::OpenAndCreate => file = fs::File::create(filepath),
-            OpenType::Open => file = fs::File::open(filepath),
-        }
+pub trait Stream {
+    fn write(&mut self, bytes: &Vec<u8>) -> Result<u64, StreamError>;
+    fn read(&mut self, buffer: &mut Vec<u8>) -> Result<u64, StreamError>;
+    fn seek(&mut self, from: u64) -> Result<u64, StreamError>;
+    fn tell(&mut self) -> Result<u64, StreamError>;
+}
 
-        match file {
-            Ok(f) => Ok(BinaryReader { file: f }),
-            Err(e) => Err(BinaryError::FSError(e)),
-        }
-    }
-
-    pub fn seek_to(&mut self, position: u64) -> Result<u64, BinaryError> {
-        let result = self.file.seek(SeekFrom::Start(position));
-
-        match result {
-            Ok(r) => Ok(r),
-            Err(e) => Err(BinaryError::FSError(e)),
-        }
+impl<'a> BinaryReader<'a> {
+    pub fn new(stream: &'a mut impl Stream) -> BinaryReader {
+        BinaryReader { stream }
     }
 
     pub fn get_cur_pos(&mut self) -> Result<u64, BinaryError> {
-        let result = self.file.seek(SeekFrom::Current(0));
+        let result = self.stream.tell();
 
         match result {
             Ok(r) => Ok(r),
-            Err(e) => Err(BinaryError::FSError(e)),
+            Err(e) => Err(BinaryError::StreamError(e)),
         }
     }
 
     pub fn read_string(&mut self) -> Result<String, BinaryError> {
-        let value = deserialize_from(&self.file);
-
-        match value {
-            Ok(v) => Ok(v),
-            Err(e) => Err(BinaryError::BinCodeErr(e)),
-        }
+        Ok(String::new())
     }
 
     pub fn read_f32(&mut self) -> Result<f32, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 4];
 
-        let read = self.file.read(&mut buffer);
+        let read = self.stream.read(&mut buffer);
 
         match read {
-            Err(e) => return Err(BinaryError::FSError(e)),
+            Err(e) => return Err(BinaryError::StreamError(e)),
             _ => {}
         };
 
@@ -83,10 +69,10 @@ impl BinaryReader {
     pub fn read_f64(&mut self) -> Result<f64, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 8];
 
-        let read = self.file.read(&mut buffer);
+        let read = self.stream.read(&mut buffer);
 
         match read {
-            Err(e) => return Err(BinaryError::FSError(e)),
+            Err(e) => return Err(BinaryError::StreamError(e)),
             _ => {}
         };
 
@@ -101,10 +87,10 @@ impl BinaryReader {
     pub fn read_isize(&mut self) -> Result<isize, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 8];
 
-        let read = self.file.read(&mut buffer);
+        let read = self.stream.read(&mut buffer);
 
         match read {
-            Err(e) => return Err(BinaryError::FSError(e)),
+            Err(e) => return Err(BinaryError::StreamError(e)),
             _ => {}
         };
 
@@ -119,10 +105,10 @@ impl BinaryReader {
     pub fn read_usize(&mut self) -> Result<usize, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 8];
 
-        let read = self.file.read(&mut buffer);
+        let read = self.stream.read(&mut buffer);
 
         match read {
-            Err(e) => return Err(BinaryError::FSError(e)),
+            Err(e) => return Err(BinaryError::StreamError(e)),
             _ => {}
         };
 
@@ -137,10 +123,10 @@ impl BinaryReader {
     pub fn read_u64(&mut self) -> Result<u64, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 8];
 
-        let read = self.file.read(&mut buffer);
+        let read = self.stream.read(&mut buffer);
 
         match read {
-            Err(e) => return Err(BinaryError::FSError(e)),
+            Err(e) => return Err(BinaryError::StreamError(e)),
             _ => {}
         };
 
@@ -155,10 +141,10 @@ impl BinaryReader {
     pub fn read_i64(&mut self) -> Result<i64, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 8];
 
-        let read = self.file.read(&mut buffer);
+        let read = self.stream.read(&mut buffer);
 
         match read {
-            Err(e) => return Err(BinaryError::FSError(e)),
+            Err(e) => return Err(BinaryError::StreamError(e)),
             _ => {}
         };
 
@@ -173,10 +159,10 @@ impl BinaryReader {
     pub fn read_u32(&mut self) -> Result<u32, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 4];
 
-        let read = self.file.read(&mut buffer);
+        let read = self.stream.read(&mut buffer);
 
         match read {
-            Err(e) => return Err(BinaryError::FSError(e)),
+            Err(e) => return Err(BinaryError::StreamError(e)),
             _ => {}
         };
 
@@ -191,10 +177,10 @@ impl BinaryReader {
     pub fn read_i32(&mut self) -> Result<i32, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 4];
 
-        let read = self.file.read(&mut buffer);
+        let read = self.stream.read(&mut buffer);
 
         match read {
-            Err(e) => return Err(BinaryError::FSError(e)),
+            Err(e) => return Err(BinaryError::StreamError(e)),
             _ => {}
         };
 
@@ -209,10 +195,10 @@ impl BinaryReader {
     pub fn read_u16(&mut self) -> Result<u16, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 2];
 
-        let read = self.file.read(&mut buffer);
+        let read = self.stream.read(&mut buffer);
 
         match read {
-            Err(e) => return Err(BinaryError::FSError(e)),
+            Err(e) => return Err(BinaryError::StreamError(e)),
             _ => {}
         };
 
@@ -227,10 +213,10 @@ impl BinaryReader {
     pub fn read_i16(&mut self) -> Result<i16, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 2];
 
-        let read = self.file.read(&mut buffer);
+        let read = self.stream.read(&mut buffer);
 
         match read {
-            Err(e) => return Err(BinaryError::FSError(e)),
+            Err(e) => return Err(BinaryError::StreamError(e)),
             _ => {}
         };
 
@@ -245,10 +231,10 @@ impl BinaryReader {
     pub fn read_u8(&mut self) -> Result<u8, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 1];
 
-        let read = self.file.read(&mut buffer);
+        let read = self.stream.read(&mut buffer);
 
         match read {
-            Err(e) => return Err(BinaryError::FSError(e)),
+            Err(e) => return Err(BinaryError::StreamError(e)),
             _ => {}
         };
 
@@ -263,10 +249,10 @@ impl BinaryReader {
     pub fn read_i8(&mut self) -> Result<i8, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 1];
 
-        let read = self.file.read(&mut buffer);
+        let read = self.stream.read(&mut buffer);
 
         match read {
-            Err(e) => return Err(BinaryError::FSError(e)),
+            Err(e) => return Err(BinaryError::StreamError(e)),
             _ => {}
         };
 
@@ -280,49 +266,30 @@ impl BinaryReader {
 
     pub fn read_bytes(&mut self, length: u64) -> Result<Vec<u8>, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; length as usize];
-        let bytes = self.file.read(&mut buffer);
+        let bytes = self.stream.read(&mut buffer);
 
         match bytes {
             Ok(_) => Ok(buffer),
-            Err(e) => Err(BinaryError::FSError(e)),
+            Err(e) => Err(BinaryError::StreamError(e)),
         }
     }
 }
 
-pub struct BinaryWriter {
-    file: fs::File,
+pub struct BinaryWriter<'a> {
+    stream: &'a mut dyn Stream,
 }
 
-impl BinaryWriter {
-    pub fn new(filepath: &str, open_type: OpenType) -> Result<BinaryWriter, BinaryError> {
-        let file;
-
-        match open_type {
-            OpenType::OpenAndCreate => file = fs::File::create(filepath),
-            OpenType::Open => file = fs::File::open(filepath),
-        }
-
-        match file {
-            Ok(f) => Ok(BinaryWriter { file: f }),
-            Err(e) => Err(BinaryError::FSError(e)),
-        }
-    }
-
-    pub fn seek_to(&mut self, position: u64) -> Result<u64, BinaryError> {
-        let result = self.file.seek(SeekFrom::Start(position));
-
-        match result {
-            Ok(seek) => Ok(seek),
-            Err(e) => Err(BinaryError::FSError(e)),
-        }
+impl<'a> BinaryWriter<'a> {
+    pub fn new(stream: &'a mut impl Stream) -> BinaryWriter {
+        BinaryWriter { stream }
     }
 
     pub fn get_cur_pos(&mut self) -> Result<u64, BinaryError> {
-        let result = self.file.seek(SeekFrom::Current(0));
+        let result = self.stream.tell();
 
         match result {
             Ok(pos) => Ok(pos),
-            Err(e) => Err(BinaryError::FSError(e)),
+            Err(e) => Err(BinaryError::StreamError(e)),
         }
     }
 
@@ -333,10 +300,10 @@ impl BinaryWriter {
             Ok(d) => d,
             Err(e) => return Some(BinaryError::BinCodeErr(e)),
         };
-        let result = self.file.write(&data);
+        let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::FSError(e)),
+            Err(e) => Some(BinaryError::StreamError(e)),
             _ => None,
         }
     }
@@ -348,10 +315,10 @@ impl BinaryWriter {
             Ok(d) => d,
             Err(e) => return Some(BinaryError::BinCodeErr(e)),
         };
-        let result = self.file.write(&data);
+        let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::FSError(e)),
+            Err(e) => Some(BinaryError::StreamError(e)),
             _ => None,
         }
     }
@@ -363,10 +330,10 @@ impl BinaryWriter {
             Ok(d) => d,
             Err(e) => return Some(BinaryError::BinCodeErr(e)),
         };
-        let result = self.file.write(&data);
+        let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::FSError(e)),
+            Err(e) => Some(BinaryError::StreamError(e)),
             _ => None,
         }
     }
@@ -378,10 +345,10 @@ impl BinaryWriter {
             Ok(d) => d,
             Err(e) => return Some(BinaryError::BinCodeErr(e)),
         };
-        let result = self.file.write(&data);
+        let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::FSError(e)),
+            Err(e) => Some(BinaryError::StreamError(e)),
             _ => None,
         }
     }
@@ -393,10 +360,10 @@ impl BinaryWriter {
             Ok(d) => d,
             Err(e) => return Some(BinaryError::BinCodeErr(e)),
         };
-        let result = self.file.write(&data);
+        let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::FSError(e)),
+            Err(e) => Some(BinaryError::StreamError(e)),
             _ => None,
         }
     }
@@ -408,10 +375,10 @@ impl BinaryWriter {
             Ok(d) => d,
             Err(e) => return Some(BinaryError::BinCodeErr(e)),
         };
-        let result = self.file.write(&data);
+        let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::FSError(e)),
+            Err(e) => Some(BinaryError::StreamError(e)),
             _ => None,
         }
     }
@@ -423,10 +390,10 @@ impl BinaryWriter {
             Ok(d) => d,
             Err(e) => return Some(BinaryError::BinCodeErr(e)),
         };
-        let result = self.file.write(&data);
+        let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::FSError(e)),
+            Err(e) => Some(BinaryError::StreamError(e)),
             _ => None,
         }
     }
@@ -438,10 +405,10 @@ impl BinaryWriter {
             Ok(d) => d,
             Err(e) => return Some(BinaryError::BinCodeErr(e)),
         };
-        let result = self.file.write(&data);
+        let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::FSError(e)),
+            Err(e) => Some(BinaryError::StreamError(e)),
             _ => None,
         }
     }
@@ -453,10 +420,10 @@ impl BinaryWriter {
             Ok(d) => d,
             Err(e) => return Some(BinaryError::BinCodeErr(e)),
         };
-        let result = self.file.write(&data);
+        let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::FSError(e)),
+            Err(e) => Some(BinaryError::StreamError(e)),
             _ => None,
         }
     }
@@ -468,10 +435,10 @@ impl BinaryWriter {
             Ok(d) => d,
             Err(e) => return Some(BinaryError::BinCodeErr(e)),
         };
-        let result = self.file.write(&data);
+        let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::FSError(e)),
+            Err(e) => Some(BinaryError::StreamError(e)),
             _ => None,
         }
     }
@@ -483,10 +450,10 @@ impl BinaryWriter {
             Ok(d) => d,
             Err(e) => return Some(BinaryError::BinCodeErr(e)),
         };
-        let result = self.file.write(&data);
+        let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::FSError(e)),
+            Err(e) => Some(BinaryError::StreamError(e)),
             _ => None,
         }
     }
@@ -498,10 +465,10 @@ impl BinaryWriter {
             Ok(d) => d,
             Err(e) => return Some(BinaryError::BinCodeErr(e)),
         };
-        let result = self.file.write(&data);
+        let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::FSError(e)),
+            Err(e) => Some(BinaryError::StreamError(e)),
             _ => None,
         }
     }
@@ -513,19 +480,19 @@ impl BinaryWriter {
             Ok(d) => d,
             Err(e) => return Some(BinaryError::BinCodeErr(e)),
         };
-        let result = self.file.write(&data);
+        let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::FSError(e)),
+            Err(e) => Some(BinaryError::StreamError(e)),
             _ => None,
         }
     }
 
     pub fn write_bytes(&mut self, data: Vec<u8>) -> Option<BinaryError> {
-        let result = self.file.write(&data);
+        let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::FSError(e)),
+            Err(e) => Some(BinaryError::StreamError(e)),
             _ => None,
         }
     }
