@@ -8,10 +8,14 @@ Example code for reading
 
 ```rust
 extern crate binary_rw;
-use binary_rw::{BinaryReader, OpenType};
+use binary_rw::{
+    filestream::{Filestream, OpenType},
+    BinaryReader
+};
 
 fn main() {
-  let mut binary_file = BinaryReader::new("data.dat", OpenType::OpenAndCreate).expect("Failed to create reader");
+  let mut fs = Filestream::new("test.bin", OpenType::Open).expect("Failed to open file"); 
+  let mut binary_file = BinaryReader::new(&mut fs);
 
   let read_value = binary_file.read_f32().expect("Failed to write f32");
   println!("{:?}", read_value);
@@ -21,10 +25,14 @@ fn main() {
 Example code for writing
 ```rust
 extern crate binary_rw;
-use binary_rw::{BinaryWriter, OpenType};
+use binary_rw::{
+    filestream::{Filestream, OpenType},
+    BinaryReader
+};
 
 fn main() {
-  let mut binary_file = BinaryWriter::new("data.dat", OpenType::Open).expect("Failed to create writer");
+  let mut fs = Filestream::new("test.bin", OpenType::OpenAndCreate).expect("Failed to open file"); 
+  let mut binary_file = BinaryWriter::new(&mut fs);
   
   let value: f32 = 30.5;
   binary_file.write_f32(value).expect("Failed to write f32");
