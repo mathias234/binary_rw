@@ -41,4 +41,4 @@ fn main() {
 
 #### TODO
 
-- Multiple underlying streams like Memory Stream and File Stream (only file stream currently)
+- Add more streams like MemoryStream  
