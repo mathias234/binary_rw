@@ -333,3 +333,49 @@ fn read_write_bytes() {
 
     cleanup("bytes");
 }
+
+#[test]
+#[should_panic]
+fn read_out_of_range() {
+    {
+        let mut stream = create_writer_stream("out_of_range");
+        let mut writer = BinaryWriter::new(&mut stream);
+
+        writer.write_f32(5.0);
+    }
+    {
+        let mut stream = create_reader_stream("out_of_range");
+
+        let mut reader = BinaryReader::new(&mut stream);
+
+        if reader.read_f32().is_err() {
+            return;
+        }
+
+        if reader.read_f32().is_err() {
+            panic!("Out of range");
+        }
+    }
+
+    cleanup("out_of_range");
+}
+
+#[test]
+fn read_write_string() {
+    let temp = "Hello World";
+    {
+        let mut stream = create_writer_stream("out_of_range");
+        let mut writer = BinaryWriter::new(&mut stream);
+
+        writer.write_string(temp.to_string());
+    }
+    {
+        let mut stream = create_reader_stream("out_of_range");
+
+        let mut reader = BinaryReader::new(&mut stream);
+        let string = reader.read_string().expect("Failed to read string");
+        assert_eq!(temp, string);
+    }
+
+    cleanup("out_of_range");
+}

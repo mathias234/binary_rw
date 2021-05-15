@@ -37,6 +37,10 @@ impl Stream for Filestream {
     }
 
     fn read(&mut self, buffer: &mut Vec<u8>) -> Result<u64, StreamError> {
+        if self.tell().unwrap() + buffer.len() as u64 > self.file.metadata().unwrap().len() {
+            return Err(StreamError::ReadError);
+        }
+
         match self.file.read(buffer) {
             Ok(res) => Ok(res as u64),
             Err(_) => Err(StreamError::ReadError),
