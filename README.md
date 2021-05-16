@@ -1,4 +1,5 @@
 # binary-rs
+![Crates.io](https://img.shields.io/crates/v/binary_rw)
 
 A binary reader/writer for the rust language, with a similar syntax to the C# BinaryWriter and BinaryReader
 
