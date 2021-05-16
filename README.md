@@ -1,5 +1,6 @@
 # binary-rs
 [![Crate](https://img.shields.io/crates/v/binary_rw)](https://crates.io/crates/binary_rw)
+[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/mathias234/binary-rs/Rust)](https://github.com/mathias234/binary-rs/actions/workflows/rust.yml)
 
 A binary reader/writer for the rust language, with a similar syntax to the C# BinaryWriter and BinaryReader
 
