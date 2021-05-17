@@ -2,6 +2,7 @@ extern crate binary_rw;
 
 use binary_rw::{
     filestream::{Filestream, OpenType},
+    memorystream::Memorystream,
     BinaryReader, BinaryWriter,
 };
 
@@ -22,25 +23,23 @@ fn seek_test() {
     let temp: f32 = 50.0;
     let seek_loc = 5;
 
-    {
-        let mut stream = create_writer_stream("seek");
-        let mut writer = BinaryWriter::new(&mut stream);
+    let mut stream = create_writer_stream("seek");
+    let mut writer = BinaryWriter::new(&mut stream);
 
-        writer.write_bytes([16; 32].to_vec());
-        writer.seek_to(seek_loc).expect("Writer seek error");
-        assert_eq!(writer.get_cur_pos().expect("Failed to get pos"), seek_loc);
-        writer.write_f32(temp);
-    }
+    writer
+        .write_bytes([16; 32].to_vec())
+        .expect("Failed to write bytes");
+    writer.seek_to(seek_loc).expect("Writer seek error");
+    assert_eq!(writer.get_cur_pos().expect("Failed to get pos"), seek_loc);
+    writer.write_f32(temp).expect("Failed to write f32");
 
-    {
-        let mut stream = create_reader_stream("seek");
-        let mut reader = BinaryReader::new(&mut stream);
-        reader.seek_to(seek_loc).expect("Writer seek error");
-        assert_eq!(reader.get_cur_pos().expect("Failed to get pos"), seek_loc);
-        let read_temp = reader.read_f32().expect("Failed to read file");
+    let mut stream = create_reader_stream("seek");
+    let mut reader = BinaryReader::new(&mut stream);
+    reader.seek_to(seek_loc).expect("Writer seek error");
+    assert_eq!(reader.get_cur_pos().expect("Failed to get pos"), seek_loc);
+    let read_temp = reader.read_f32().expect("Failed to read file");
 
-        assert_eq!(temp, read_temp);
-    }
+    assert_eq!(temp, read_temp);
 
     cleanup("seek");
 }
@@ -48,21 +47,17 @@ fn seek_test() {
 #[test]
 fn read_write_test_f64() {
     let temp: f64 = 50.0;
-    {
-        let mut stream = create_writer_stream("f64");
-        let mut writer = BinaryWriter::new(&mut stream);
+    let mut stream = create_writer_stream("f64");
+    let mut writer = BinaryWriter::new(&mut stream);
 
-        writer.write_f64(temp);
-    }
+    writer.write_f64(temp).expect("Failed to write f64");
 
-    {
-        let mut stream = create_reader_stream("f64");
-        let mut reader = BinaryReader::new(&mut stream);
+    let mut stream = create_reader_stream("f64");
+    let mut reader = BinaryReader::new(&mut stream);
 
-        let read_temp = reader.read_f64().expect("Failed to read file");
+    let read_temp = reader.read_f64().expect("Failed to read file");
 
-        assert_eq!(temp, read_temp);
-    }
+    assert_eq!(temp, read_temp);
 
     cleanup("f64")
 }
@@ -70,21 +65,17 @@ fn read_write_test_f64() {
 #[test]
 fn read_write_test_f32() {
     let temp: f32 = 50.0;
-    {
-        let mut stream = create_writer_stream("f32");
-        let mut writer = BinaryWriter::new(&mut stream);
+    let mut stream = create_writer_stream("f32");
+    let mut writer = BinaryWriter::new(&mut stream);
 
-        writer.write_f32(temp);
-    }
+    writer.write_f32(temp).expect("Failed to write f32");
 
-    {
-        let mut stream = create_reader_stream("f32");
-        let mut reader = BinaryReader::new(&mut stream);
+    let mut stream = create_reader_stream("f32");
+    let mut reader = BinaryReader::new(&mut stream);
 
-        let read_temp = reader.read_f32().expect("Failed to read file");
+    let read_temp = reader.read_f32().expect("Failed to read file");
 
-        assert_eq!(temp, read_temp);
-    }
+    assert_eq!(temp, read_temp);
 
     cleanup("f32");
 }
@@ -92,21 +83,17 @@ fn read_write_test_f32() {
 #[test]
 fn read_write_test_isize() {
     let temp: isize = 50;
-    {
-        let mut stream = create_writer_stream("isize");
-        let mut writer = BinaryWriter::new(&mut stream);
+    let mut stream = create_writer_stream("isize");
+    let mut writer = BinaryWriter::new(&mut stream);
 
-        writer.write_isize(temp);
-    }
+    writer.write_isize(temp).expect("Failed to write isize");
 
-    {
-        let mut stream = create_reader_stream("isize");
-        let mut reader = BinaryReader::new(&mut stream);
+    let mut stream = create_reader_stream("isize");
+    let mut reader = BinaryReader::new(&mut stream);
 
-        let read_temp = reader.read_isize().expect("Failed to read file");
+    let read_temp = reader.read_isize().expect("Failed to read file");
 
-        assert_eq!(temp, read_temp);
-    }
+    assert_eq!(temp, read_temp);
 
     cleanup("isize");
 }
@@ -114,20 +101,16 @@ fn read_write_test_isize() {
 #[test]
 fn read_write_test_usize() {
     let temp: usize = 50;
-    {
-        let mut stream = create_writer_stream("usize");
-        let mut writer = BinaryWriter::new(&mut stream);
+    let mut stream = create_writer_stream("usize");
+    let mut writer = BinaryWriter::new(&mut stream);
 
-        writer.write_usize(temp);
-    }
+    writer.write_usize(temp).expect("Failed to write usize");
 
-    {
-        let mut stream = create_reader_stream("usize");
-        let mut reader = BinaryReader::new(&mut stream);
+    let mut stream = create_reader_stream("usize");
+    let mut reader = BinaryReader::new(&mut stream);
 
-        let read_temp = reader.read_usize().expect("Failed to read file");
-        assert_eq!(temp, read_temp);
-    }
+    let read_temp = reader.read_usize().expect("Failed to read file");
+    assert_eq!(temp, read_temp);
 
     cleanup("usize");
 }
@@ -135,21 +118,17 @@ fn read_write_test_usize() {
 #[test]
 fn read_write_test_i64() {
     let temp: i64 = 50;
-    {
-        let mut stream = create_writer_stream("i64");
-        let mut writer = BinaryWriter::new(&mut stream);
+    let mut stream = create_writer_stream("i64");
+    let mut writer = BinaryWriter::new(&mut stream);
 
-        writer.write_i64(temp);
-    }
+    writer.write_i64(temp).expect("Failed to write i64");
 
-    {
-        let mut stream = create_reader_stream("i64");
-        let mut reader = BinaryReader::new(&mut stream);
+    let mut stream = create_reader_stream("i64");
+    let mut reader = BinaryReader::new(&mut stream);
 
-        let read_temp = reader.read_i64().expect("Failed to read file");
+    let read_temp = reader.read_i64().expect("Failed to read file");
 
-        assert_eq!(temp, read_temp);
-    }
+    assert_eq!(temp, read_temp);
 
     cleanup("i64");
 }
@@ -157,20 +136,17 @@ fn read_write_test_i64() {
 #[test]
 fn read_write_test_i32() {
     let temp: i32 = 50;
-    {
-        let mut stream = create_writer_stream("i32");
-        let mut writer = BinaryWriter::new(&mut stream);
+    let mut stream = create_writer_stream("i32");
+    let mut writer = BinaryWriter::new(&mut stream);
 
-        writer.write_i32(temp);
-    }
-    {
-        let mut stream = create_reader_stream("i32");
-        let mut reader = BinaryReader::new(&mut stream);
+    writer.write_i32(temp).expect("Failed to write i32");
 
-        let read_temp = reader.read_i32().expect("Failed to read file");
+    let mut stream = create_reader_stream("i32");
+    let mut reader = BinaryReader::new(&mut stream);
 
-        assert_eq!(temp, read_temp);
-    }
+    let read_temp = reader.read_i32().expect("Failed to read file");
+
+    assert_eq!(temp, read_temp);
 
     cleanup("i32");
 }
@@ -178,21 +154,17 @@ fn read_write_test_i32() {
 #[test]
 fn read_write_test_i16() {
     let temp: i16 = 50;
-    {
-        let mut stream = create_writer_stream("i16");
-        let mut writer = BinaryWriter::new(&mut stream);
+    let mut stream = create_writer_stream("i16");
+    let mut writer = BinaryWriter::new(&mut stream);
 
-        writer.write_i16(temp);
-    }
+    writer.write_i16(temp).expect("Failed to write i16");
 
-    {
-        let mut stream = create_reader_stream("i16");
-        let mut reader = BinaryReader::new(&mut stream);
+    let mut stream = create_reader_stream("i16");
+    let mut reader = BinaryReader::new(&mut stream);
 
-        let read_temp = reader.read_i16().expect("Failed to read file");
+    let read_temp = reader.read_i16().expect("Failed to read file");
 
-        assert_eq!(temp, read_temp);
-    }
+    assert_eq!(temp, read_temp);
 
     cleanup("i16");
 }
@@ -200,21 +172,17 @@ fn read_write_test_i16() {
 #[test]
 fn read_write_test_i8() {
     let temp: i8 = 50;
-    {
-        let mut stream = create_writer_stream("i8");
-        let mut writer = BinaryWriter::new(&mut stream);
+    let mut stream = create_writer_stream("i8");
+    let mut writer = BinaryWriter::new(&mut stream);
 
-        writer.write_i8(temp);
-    }
+    writer.write_i8(temp).expect("Failed to write i8");
 
-    {
-        let mut stream = create_reader_stream("i8");
-        let mut reader = BinaryReader::new(&mut stream);
+    let mut stream = create_reader_stream("i8");
+    let mut reader = BinaryReader::new(&mut stream);
 
-        let read_temp = reader.read_i8().expect("Failed to read file");
+    let read_temp = reader.read_i8().expect("Failed to read file");
 
-        assert_eq!(temp, read_temp);
-    }
+    assert_eq!(temp, read_temp);
 
     cleanup("i8");
 }
@@ -222,21 +190,17 @@ fn read_write_test_i8() {
 #[test]
 fn read_write_test_u64() {
     let temp: u64 = 50;
-    {
-        let mut stream = create_writer_stream("u64");
-        let mut writer = BinaryWriter::new(&mut stream);
+    let mut stream = create_writer_stream("u64");
+    let mut writer = BinaryWriter::new(&mut stream);
 
-        writer.write_u64(temp);
-    }
+    writer.write_u64(temp).expect("Failed to write u64");
 
-    {
-        let mut stream = create_reader_stream("u64");
-        let mut reader = BinaryReader::new(&mut stream);
+    let mut stream = create_reader_stream("u64");
+    let mut reader = BinaryReader::new(&mut stream);
 
-        let read_temp = reader.read_u64().expect("Failed to read file");
+    let read_temp = reader.read_u64().expect("Failed to read file");
 
-        assert_eq!(temp, read_temp);
-    }
+    assert_eq!(temp, read_temp);
 
     cleanup("u64");
 }
@@ -244,21 +208,17 @@ fn read_write_test_u64() {
 #[test]
 fn read_write_test_u32() {
     let temp: u32 = 50;
-    {
-        let mut stream = create_writer_stream("u32");
-        let mut writer = BinaryWriter::new(&mut stream);
+    let mut stream = create_writer_stream("u32");
+    let mut writer = BinaryWriter::new(&mut stream);
 
-        writer.write_u32(temp);
-    }
+    writer.write_u32(temp).expect("Failed to write u32");
 
-    {
-        let mut stream = create_reader_stream("u32");
-        let mut reader = BinaryReader::new(&mut stream);
+    let mut stream = create_reader_stream("u32");
+    let mut reader = BinaryReader::new(&mut stream);
 
-        let read_temp = reader.read_u32().expect("Failed to read file");
+    let read_temp = reader.read_u32().expect("Failed to read file");
 
-        assert_eq!(temp, read_temp);
-    }
+    assert_eq!(temp, read_temp);
 
     cleanup("u32");
 }
@@ -266,21 +226,17 @@ fn read_write_test_u32() {
 #[test]
 fn read_write_test_u16() {
     let temp: u16 = 50;
-    {
-        let mut stream = create_writer_stream("u16");
-        let mut writer = BinaryWriter::new(&mut stream);
+    let mut stream = create_writer_stream("u16");
+    let mut writer = BinaryWriter::new(&mut stream);
 
-        writer.write_u16(temp);
-    }
+    writer.write_u16(temp).expect("Failed to write u16");
 
-    {
-        let mut stream = create_reader_stream("u16");
-        let mut reader = BinaryReader::new(&mut stream);
+    let mut stream = create_reader_stream("u16");
+    let mut reader = BinaryReader::new(&mut stream);
 
-        let read_temp = reader.read_u16().expect("Failed to read file");
+    let read_temp = reader.read_u16().expect("Failed to read file");
 
-        assert_eq!(temp, read_temp);
-    }
+    assert_eq!(temp, read_temp);
 
     cleanup("u16");
 }
@@ -288,21 +244,17 @@ fn read_write_test_u16() {
 #[test]
 fn read_write_test_u8() {
     let temp: u8 = 50;
-    {
-        let mut stream = create_writer_stream("u8");
-        let mut writer = BinaryWriter::new(&mut stream);
+    let mut stream = create_writer_stream("u8");
+    let mut writer = BinaryWriter::new(&mut stream);
 
-        writer.write_u8(temp);
-    }
+    writer.write_u8(temp).expect("Failed to write u8");
 
-    {
-        let mut stream = create_reader_stream("u8");
-        let mut reader = BinaryReader::new(&mut stream);
+    let mut stream = create_reader_stream("u8");
+    let mut reader = BinaryReader::new(&mut stream);
 
-        let read_temp = reader.read_u8().expect("Failed to read file");
+    let read_temp = reader.read_u8().expect("Failed to read file");
 
-        assert_eq!(temp, read_temp);
-    }
+    assert_eq!(temp, read_temp);
 
     cleanup("u8");
 }
@@ -313,23 +265,20 @@ fn read_write_bytes() {
 
     let temp = vec![16; count];
 
-    {
-        let mut stream = create_writer_stream("bytes");
-        let mut writer = BinaryWriter::new(&mut stream);
+    let mut stream = create_writer_stream("bytes");
+    let mut writer = BinaryWriter::new(&mut stream);
 
-        writer.write_bytes(temp.clone());
-    }
-    {
-        let mut stream = create_reader_stream("bytes");
+    writer
+        .write_bytes(temp.clone())
+        .expect("Failed to write bytes");
 
-        let mut reader = BinaryReader::new(&mut stream);
+    let mut stream = create_reader_stream("bytes");
 
-        let read_temp = reader
-            .read_bytes(count as u64)
-            .expect("Failed to read file");
+    let mut reader = BinaryReader::new(&mut stream);
 
-        assert_eq!(temp, read_temp);
-    }
+    let read_temp = reader.read_bytes(count).expect("Failed to read file");
+
+    assert_eq!(temp, read_temp);
 
     cleanup("bytes");
 }
@@ -337,24 +286,21 @@ fn read_write_bytes() {
 #[test]
 #[should_panic]
 fn read_out_of_range() {
-    {
-        let mut stream = create_writer_stream("out_of_range");
-        let mut writer = BinaryWriter::new(&mut stream);
+    let mut stream = create_writer_stream("out_of_range");
+    let mut writer = BinaryWriter::new(&mut stream);
 
-        writer.write_f32(5.0);
+    writer.write_f32(5.0).expect("Failed to write f32");
+
+    let mut stream = create_reader_stream("out_of_range");
+
+    let mut reader = BinaryReader::new(&mut stream);
+
+    if reader.read_f32().is_err() {
+        return;
     }
-    {
-        let mut stream = create_reader_stream("out_of_range");
 
-        let mut reader = BinaryReader::new(&mut stream);
-
-        if reader.read_f32().is_err() {
-            return;
-        }
-
-        if reader.read_f32().is_err() {
-            panic!("Out of range");
-        }
+    if reader.read_f32().is_err() {
+        panic!("Out of range");
     }
 
     cleanup("out_of_range");
@@ -363,19 +309,33 @@ fn read_out_of_range() {
 #[test]
 fn read_write_string() {
     let temp = "Hello World";
-    {
-        let mut stream = create_writer_stream("out_of_range");
-        let mut writer = BinaryWriter::new(&mut stream);
+    let mut stream = create_writer_stream("out_of_range");
+    let mut writer = BinaryWriter::new(&mut stream);
 
-        writer.write_string(temp.to_string());
-    }
-    {
-        let mut stream = create_reader_stream("out_of_range");
+    writer
+        .write_string(temp.to_string())
+        .expect("Failed to write string");
+    let mut stream = create_reader_stream("out_of_range");
 
-        let mut reader = BinaryReader::new(&mut stream);
-        let string = reader.read_string().expect("Failed to read string");
-        assert_eq!(temp, string);
-    }
+    let mut reader = BinaryReader::new(&mut stream);
+    let string = reader.read_string().expect("Failed to read string");
+    assert_eq!(temp, string);
 
     cleanup("out_of_range");
+}
+
+#[test]
+fn read_write_from_memorystream() {
+    let temp = 5.0;
+    let mut stream = Memorystream::new().expect("Error");
+    let mut writer = BinaryWriter::new(&mut stream);
+    writer.write_f32(temp).expect("Failed to write f32");
+    writer.write_f32(temp).expect("Failed to write f32");
+
+    let mut reader = BinaryReader::new(&mut stream);
+    reader.seek_to(0).expect("Failed to seek");
+    let value = reader.read_f32().expect("Failed to read f32");
+    assert_eq!(temp, value);
+    let value = reader.read_f32().expect("Failed to read f32");
+    assert_eq!(temp, value);
 }

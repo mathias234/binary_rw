@@ -31,24 +31,24 @@ impl Filestream {
 impl Stream for Filestream {
     fn write(&mut self, bytes: &Vec<u8>) -> Result<usize, StreamError> {
         match self.file.write(bytes) {
-            Ok(res) => Ok(res),
+            Ok(res) => Ok(res as usize),
             Err(_) => Err(StreamError::WriteError),
         }
     }
 
     fn read(&mut self, buffer: &mut Vec<u8>) -> Result<usize, StreamError> {
-        if self.tell().unwrap() + buffer.len() > self.file.metadata().unwrap().len() as usize {
+        if self.tell().unwrap() + buffer.len() as usize > self.file.metadata().unwrap().len() {
             return Err(StreamError::ReadError);
         }
 
         match self.file.read(buffer) {
-            Ok(res) => Ok(res),
+            Ok(res) => Ok(res as usize),
             Err(_) => Err(StreamError::ReadError),
         }
     }
 
     fn seek(&mut self, to: usize) -> Result<usize, StreamError> {
-        match self.file.seek(SeekFrom::Start(to as u64)) {
+        match self.file.seek(SeekFrom::Start(from)) {
             Ok(res) => Ok(res as usize),
             Err(_) => Err(StreamError::SeekError),
         }

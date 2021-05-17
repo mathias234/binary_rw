@@ -5,6 +5,7 @@ use std::string::FromUtf8Error;
 use bincode::{deserialize, serialize};
 
 pub mod filestream;
+pub mod memorystream;
 
 pub struct BinaryReader<'a> {
     stream: &'a mut dyn Stream,
@@ -20,6 +21,12 @@ pub enum BinaryError {
 impl From<FromUtf8Error> for BinaryError {
     fn from(error: FromUtf8Error) -> BinaryError {
         BinaryError::Utf8Error(error)
+    }
+}
+
+impl From<Box<bincode::ErrorKind>> for BinaryError {
+    fn from(error: Box<bincode::ErrorKind>) -> BinaryError {
+        BinaryError::BinCodeErr(error)
     }
 }
 
@@ -39,10 +46,10 @@ pub enum StreamError {
 }
 
 pub trait Stream {
-    fn write(&mut self, bytes: &Vec<u8>) -> Result<u64, StreamError>;
-    fn read(&mut self, buffer: &mut Vec<u8>) -> Result<u64, StreamError>;
-    fn seek(&mut self, from: u64) -> Result<u64, StreamError>;
-    fn tell(&mut self) -> Result<u64, StreamError>;
+    fn write(&mut self, bytes: &Vec<u8>) -> Result<usize, StreamError>;
+    fn read(&mut self, buffer: &mut Vec<u8>) -> Result<usize, StreamError>;
+    fn seek(&mut self, to: usize) -> Result<usize, StreamError>;
+    fn tell(&mut self) -> Result<usize, StreamError>;
 }
 
 impl<'a> BinaryReader<'a> {
@@ -50,7 +57,7 @@ impl<'a> BinaryReader<'a> {
         BinaryReader { stream }
     }
 
-    pub fn seek_to(&mut self, to: u64) -> Result<u64, BinaryError> {
+    pub fn seek_to(&mut self, to: usize) -> Result<usize, BinaryError> {
         let result = self.stream.seek(to);
 
         match result {
@@ -59,7 +66,7 @@ impl<'a> BinaryReader<'a> {
         }
     }
 
-    pub fn get_cur_pos(&mut self) -> Result<u64, BinaryError> {
+    pub fn get_cur_pos(&mut self) -> Result<usize, BinaryError> {
         let result = self.stream.tell();
 
         match result {
@@ -234,8 +241,8 @@ impl<'a> BinaryReader<'a> {
         }
     }
 
-    pub fn read_bytes(&mut self, length: u64) -> Result<Vec<u8>, BinaryError> {
-        let mut buffer: Vec<u8> = vec![0; length as usize];
+    pub fn read_bytes(&mut self, length: usize) -> Result<Vec<u8>, BinaryError> {
+        let mut buffer: Vec<u8> = vec![0; length];
         let bytes = self.stream.read(&mut buffer);
 
         match bytes {
@@ -254,7 +261,7 @@ impl<'a> BinaryWriter<'a> {
         BinaryWriter { stream }
     }
 
-    pub fn seek_to(&mut self, to: u64) -> Result<u64, BinaryError> {
+    pub fn seek_to(&mut self, to: usize) -> Result<usize, BinaryError> {
         let result = self.stream.seek(to);
 
         match result {
@@ -263,7 +270,7 @@ impl<'a> BinaryWriter<'a> {
         }
     }
 
-    pub fn get_cur_pos(&mut self) -> Result<u64, BinaryError> {
+    pub fn get_cur_pos(&mut self) -> Result<usize, BinaryError> {
         let result = self.stream.tell();
 
         match result {
@@ -272,204 +279,157 @@ impl<'a> BinaryWriter<'a> {
         }
     }
 
-    pub fn write_string(&mut self, value: String) -> Option<BinaryError> {
+    pub fn write_string(&mut self, value: String) -> Result<usize, BinaryError> {
         let bytes = value.as_bytes();
 
-        self.write_usize(bytes.len());
+        self.write_usize(bytes.len())?;
+
         let result = self.stream.write(&bytes.to_vec());
 
         match result {
-            Err(e) => Some(BinaryError::StreamError(e)),
-            _ => None,
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::StreamError(e)),
         }
     }
 
-    pub fn write_f32(&mut self, value: f32) -> Option<BinaryError> {
-        let data = serialize(&value);
+    pub fn write_f32(&mut self, value: f32) -> Result<usize, BinaryError> {
+        let data = serialize(&value)?;
 
-        let data = match data {
-            Ok(d) => d,
-            Err(e) => return Some(BinaryError::BinCodeErr(e)),
-        };
         let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::StreamError(e)),
-            _ => None,
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::StreamError(e)),
         }
     }
 
-    pub fn write_f64(&mut self, value: f64) -> Option<BinaryError> {
-        let data = serialize(&value);
+    pub fn write_f64(&mut self, value: f64) -> Result<usize, BinaryError> {
+        let data = serialize(&value)?;
 
-        let data = match data {
-            Ok(d) => d,
-            Err(e) => return Some(BinaryError::BinCodeErr(e)),
-        };
         let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::StreamError(e)),
-            _ => None,
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::StreamError(e)),
         }
     }
 
-    pub fn write_isize(&mut self, value: isize) -> Option<BinaryError> {
-        let data = serialize(&value);
+    pub fn write_isize(&mut self, value: isize) -> Result<usize, BinaryError> {
+        let data = serialize(&value)?;
 
-        let data = match data {
-            Ok(d) => d,
-            Err(e) => return Some(BinaryError::BinCodeErr(e)),
-        };
         let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::StreamError(e)),
-            _ => None,
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::StreamError(e)),
         }
     }
 
-    pub fn write_usize(&mut self, value: usize) -> Option<BinaryError> {
-        let data = serialize(&value);
+    pub fn write_usize(&mut self, value: usize) -> Result<usize, BinaryError> {
+        let data = serialize(&value)?;
 
-        let data = match data {
-            Ok(d) => d,
-            Err(e) => return Some(BinaryError::BinCodeErr(e)),
-        };
         let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::StreamError(e)),
-            _ => None,
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::StreamError(e)),
         }
     }
 
-    pub fn write_u64(&mut self, value: u64) -> Option<BinaryError> {
-        let data = serialize(&value);
+    pub fn write_u64(&mut self, value: u64) -> Result<usize, BinaryError> {
+        let data = serialize(&value)?;
 
-        let data = match data {
-            Ok(d) => d,
-            Err(e) => return Some(BinaryError::BinCodeErr(e)),
-        };
         let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::StreamError(e)),
-            _ => None,
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::StreamError(e)),
         }
     }
 
-    pub fn write_i64(&mut self, value: i64) -> Option<BinaryError> {
-        let data = serialize(&value);
+    pub fn write_i64(&mut self, value: i64) -> Result<usize, BinaryError> {
+        let data = serialize(&value)?;
 
-        let data = match data {
-            Ok(d) => d,
-            Err(e) => return Some(BinaryError::BinCodeErr(e)),
-        };
         let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::StreamError(e)),
-            _ => None,
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::StreamError(e)),
         }
     }
 
-    pub fn write_u32(&mut self, value: u32) -> Option<BinaryError> {
-        let data = serialize(&value);
+    pub fn write_u32(&mut self, value: u32) -> Result<usize, BinaryError> {
+        let data = serialize(&value)?;
 
-        let data = match data {
-            Ok(d) => d,
-            Err(e) => return Some(BinaryError::BinCodeErr(e)),
-        };
         let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::StreamError(e)),
-            _ => None,
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::StreamError(e)),
         }
     }
 
-    pub fn write_i32(&mut self, value: i32) -> Option<BinaryError> {
-        let data = serialize(&value);
+    pub fn write_i32(&mut self, value: i32) -> Result<usize, BinaryError> {
+        let data = serialize(&value)?;
 
-        let data = match data {
-            Ok(d) => d,
-            Err(e) => return Some(BinaryError::BinCodeErr(e)),
-        };
         let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::StreamError(e)),
-            _ => None,
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::StreamError(e)),
         }
     }
 
-    pub fn write_u16(&mut self, value: u16) -> Option<BinaryError> {
-        let data = serialize(&value);
+    pub fn write_u16(&mut self, value: u16) -> Result<usize, BinaryError> {
+        let data = serialize(&value)?;
 
-        let data = match data {
-            Ok(d) => d,
-            Err(e) => return Some(BinaryError::BinCodeErr(e)),
-        };
         let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::StreamError(e)),
-            _ => None,
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::StreamError(e)),
         }
     }
 
-    pub fn write_i16(&mut self, value: i16) -> Option<BinaryError> {
-        let data = serialize(&value);
+    pub fn write_i16(&mut self, value: i16) -> Result<usize, BinaryError> {
+        let data = serialize(&value)?;
 
-        let data = match data {
-            Ok(d) => d,
-            Err(e) => return Some(BinaryError::BinCodeErr(e)),
-        };
         let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::StreamError(e)),
-            _ => None,
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::StreamError(e)),
         }
     }
 
-    pub fn write_u8(&mut self, value: u8) -> Option<BinaryError> {
-        let data = serialize(&value);
+    pub fn write_u8(&mut self, value: u8) -> Result<usize, BinaryError> {
+        let data = serialize(&value)?;
 
-        let data = match data {
-            Ok(d) => d,
-            Err(e) => return Some(BinaryError::BinCodeErr(e)),
-        };
         let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::StreamError(e)),
-            _ => None,
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::StreamError(e)),
         }
     }
 
-    pub fn write_i8(&mut self, value: i8) -> Option<BinaryError> {
-        let data = serialize(&value);
+    pub fn write_i8(&mut self, value: i8) -> Result<usize, BinaryError> {
+        let data = serialize(&value)?;
 
-        let data = match data {
-            Ok(d) => d,
-            Err(e) => return Some(BinaryError::BinCodeErr(e)),
-        };
         let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::StreamError(e)),
-            _ => None,
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::StreamError(e)),
         }
     }
 
-    pub fn write_bytes(&mut self, data: Vec<u8>) -> Option<BinaryError> {
+    pub fn write_bytes(&mut self, data: Vec<u8>) -> Result<usize, BinaryError> {
         let result = self.stream.write(&data);
 
         match result {
-            Err(e) => Some(BinaryError::StreamError(e)),
-            _ => None,
+            Ok(v) => Ok(v),
+            Err(e) => Err(BinaryError::StreamError(e)),
         }
     }
 }
