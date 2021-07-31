@@ -44,6 +44,8 @@ impl Stream for Memorystream {
             idx += 1;
         }
 
+        self.position += buffer.len();
+
         Ok(buffer.len())
     }
 
