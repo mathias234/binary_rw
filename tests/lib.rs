@@ -326,18 +326,19 @@ fn read_write_string() {
 
 #[test]
 fn read_write_from_memorystream() {
-    let temp = 5.0;
+    let valueA = 3.0;
+    let valueB = 5.0;
     let mut stream = Memorystream::new().expect("Error");
     let mut writer = BinaryWriter::new(&mut stream);
-    writer.write_f32(temp).expect("Failed to write f32");
-    writer.write_f32(temp).expect("Failed to write f32");
+    writer.write_f32(valueA).expect("Failed to write f32");
+    writer.write_f32(valueB).expect("Failed to write f32");
 
     let mut reader = BinaryReader::new(&mut stream);
     reader.seek_to(0).expect("Failed to seek");
     let value = reader.read_f32().expect("Failed to read f32");
-    assert_eq!(temp, value);
+    assert_eq!(valueA, value);
     let value = reader.read_f32().expect("Failed to read f32");
-    assert_eq!(temp, value);
+    assert_eq!(valueB, value);
 }
 
 #[test]
