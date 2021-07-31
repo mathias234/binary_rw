@@ -295,15 +295,15 @@ fn read_out_of_range() {
 
     let mut reader = BinaryReader::new(&mut stream);
 
-    reader.read_f32().expect("Failed to read f32");
+    if reader.read_f32().is_err() {
+        return;
+    }
 
-    let was_error = reader.read_f32().is_err();
-
-    cleanup("out_of_range");
-
-    if was_error {
+    if reader.read_f32().is_err() {
         panic!("Out of range");
     }
+
+    cleanup("out_of_range");
 }
 
 #[test]
