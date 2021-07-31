@@ -295,50 +295,50 @@ fn read_out_of_range() {
 
     let mut reader = BinaryReader::new(&mut stream);
 
-    reader.read_f32().expect("Failed to read f32");
+    if reader.read_f32().is_err() {
+        return;
+    }
 
-    let was_error = reader.read_f32().is_err();
-
-    cleanup("out_of_range");
-
-    if was_error {
+    if reader.read_f32().is_err() {
         panic!("Out of range");
     }
+
+    cleanup("out_of_range");
 }
 
 #[test]
 fn read_write_string() {
     let temp = "Hello World";
-    let mut stream = create_writer_stream("read_write_string");
+    let mut stream = create_writer_stream("out_of_range");
     let mut writer = BinaryWriter::new(&mut stream);
 
     writer
         .write_string(temp.to_string())
         .expect("Failed to write string");
-    let mut stream = create_reader_stream("read_write_string");
+    let mut stream = create_reader_stream("out_of_range");
 
     let mut reader = BinaryReader::new(&mut stream);
     let string = reader.read_string().expect("Failed to read string");
     assert_eq!(temp, string);
 
-    cleanup("read_write_string");
+    cleanup("out_of_range");
 }
 
 #[test]
 fn read_write_from_memorystream() {
-    let valueA = 3.0;
-    let valueB = 5.0;
+    let value_a = 3.0;
+    let value_b = 5.0;
     let mut stream = Memorystream::new().expect("Error");
     let mut writer = BinaryWriter::new(&mut stream);
-    writer.write_f32(valueA).expect("Failed to write f32");
-    writer.write_f32(valueB).expect("Failed to write f32");
+    writer.write_f32(value_a).expect("Failed to write f32");
+    writer.write_f32(value_b).expect("Failed to write f32");
 
     let mut reader = BinaryReader::new(&mut stream);
     reader.seek_to(0).expect("Failed to seek");
     let value = reader.read_f32().expect("Failed to read f32");
-    assert_eq!(valueA, value);
+    assert_eq!(value_a, value);
     let value = reader.read_f32().expect("Failed to read f32");
-    assert_eq!(valueB, value);
+    assert_eq!(value_b, value);
 }
 
 #[test]
@@ -349,7 +349,7 @@ fn write_to_memorystream_overlapping() {
     writer.write_f32(2.0).expect("Failed to write f32");
     writer.write_f32(3.0).expect("Failed to write f32");
 
-    writer.seek_to(0);
+    writer.seek_to(0).expect("Failed to seek to 0");
     writer.write_f32(4.0).expect("Failed to overwrite f32");
     writer.write_f32(5.0).expect("Failed to overwrite f32");
     writer.write_f32(6.0).expect("Failed to overwrite f32");
@@ -372,7 +372,7 @@ fn write_to_filestream_overlapping() {
     writer.write_f32(2.0).expect("Failed to write f32");
     writer.write_f32(3.0).expect("Failed to write f32");
 
-    writer.seek_to(0);
+    writer.seek_to(0).expect("Failed to seek to 0");
     writer.write_f32(4.0).expect("Failed to overwrite f32");
     writer.write_f32(5.0).expect("Failed to overwrite f32");
     writer.write_f32(6.0).expect("Failed to overwrite f32");

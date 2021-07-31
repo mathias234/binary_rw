@@ -16,10 +16,13 @@ impl Memorystream {
 
 impl Stream for Memorystream {
     fn write(&mut self, bytes: &Vec<u8>) -> Result<usize, StreamError> {
-        let bytes_out_of_buffer = bytes.len() - (self.buffer.len() - self.position);
+        let bytes_to_end = self.buffer.len() - self.position;
+        if bytes.len() > bytes_to_end {
+            let bytes_out_of_buffer = bytes.len() - bytes_to_end;
 
-        for _ in 0..bytes_out_of_buffer {
-            self.buffer.push(0);
+            for _ in 0..bytes_out_of_buffer {
+                self.buffer.push(0);
+            }
         }
 
         let mut idx = 0;
