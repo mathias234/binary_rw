@@ -339,3 +339,50 @@ fn read_write_from_memorystream() {
     let value = reader.read_f32().expect("Failed to read f32");
     assert_eq!(temp, value);
 }
+
+#[test]
+fn write_to_memorystream_overlapping() {
+    let mut stream = Memorystream::new().expect("Error");
+    let mut writer = BinaryWriter::new(&mut stream);
+    writer.write_f32(1.0).expect("Failed to write f32");
+    writer.write_f32(2.0).expect("Failed to write f32");
+    writer.write_f32(3.0).expect("Failed to write f32");
+
+    writer.seek_to(0);
+    writer.write_f32(4.0).expect("Failed to overwrite f32");
+    writer.write_f32(5.0).expect("Failed to overwrite f32");
+    writer.write_f32(6.0).expect("Failed to overwrite f32");
+
+    let mut reader = BinaryReader::new(&mut stream);
+    let value = reader.read_f32().expect("Failed to read f32");
+    assert_eq!(4.0, value);
+    let value = reader.read_f32().expect("Failed to read f32");
+    assert_eq!(5.0, value);
+    let value = reader.read_f32().expect("Failed to read f32");
+    assert_eq!(6.0, value);
+}
+
+#[test]
+fn write_to_filestream_overlapping() {
+    let mut stream = create_writer_stream("filestream_overlapping");
+    let mut writer = BinaryWriter::new(&mut stream);
+    writer.write_f32(1.0).expect("Failed to write f32");
+    writer.write_f32(2.0).expect("Failed to write f32");
+    writer.write_f32(3.0).expect("Failed to write f32");
+
+    writer.seek_to(0);
+    writer.write_f32(4.0).expect("Failed to overwrite f32");
+    writer.write_f32(5.0).expect("Failed to overwrite f32");
+    writer.write_f32(6.0).expect("Failed to overwrite f32");
+
+    let mut stream = create_reader_stream("filestream_overlapping");
+    let mut reader = BinaryReader::new(&mut stream);
+    let value = reader.read_f32().expect("Failed to read f32");
+    assert_eq!(4.0, value);
+    let value = reader.read_f32().expect("Failed to read f32");
+    assert_eq!(5.0, value);
+    let value = reader.read_f32().expect("Failed to read f32");
+    assert_eq!(6.0, value);
+
+    cleanup("filestream_overlapping");
+}
