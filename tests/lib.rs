@@ -355,6 +355,7 @@ fn write_to_memorystream_overlapping() {
     writer.write_f32(6.0).expect("Failed to overwrite f32");
 
     let mut reader = BinaryReader::new(&mut stream);
+    reader.seek_to(0).expect("Failed to seek");
     let value = reader.read_f32().expect("Failed to read f32");
     assert_eq!(4.0, value);
     let value = reader.read_f32().expect("Failed to read f32");
