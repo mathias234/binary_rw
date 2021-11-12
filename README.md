@@ -19,7 +19,7 @@ fn main() {
   let mut fs = Filestream::new("test.bin", OpenType::Open).expect("Failed to open file"); 
   let mut binary_file = BinaryReader::new(&mut fs);
 
-  let read_value = binary_file.read_f32().expect("Failed to write f32");
+  let read_value = binary_file.read_f32().expect("Failed to read f32");
   println!("{:?}", read_value);
 }
 ```
