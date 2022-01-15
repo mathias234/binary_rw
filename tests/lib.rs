@@ -300,28 +300,28 @@ fn read_out_of_range() {
     }
 
     if reader.read_f32().is_err() {
+        cleanup("out_of_range");
         panic!("Out of range");
     }
 
-    cleanup("out_of_range");
 }
 
 #[test]
 fn read_write_string() {
     let temp = "Hello World";
-    let mut stream = create_writer_stream("out_of_range");
+    let mut stream = create_writer_stream("read_write_string");
     let mut writer = BinaryWriter::new(&mut stream);
 
     writer
         .write_string(temp.to_string())
         .expect("Failed to write string");
-    let mut stream = create_reader_stream("out_of_range");
+    let mut stream = create_reader_stream("read_write_string");
 
     let mut reader = BinaryReader::new(&mut stream);
     let string = reader.read_string().expect("Failed to read string");
     assert_eq!(temp, string);
 
-    cleanup("out_of_range");
+    cleanup("read_write_string");
 }
 
 #[test]
