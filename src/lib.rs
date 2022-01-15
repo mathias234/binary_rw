@@ -288,8 +288,8 @@ impl<'a> BinaryWriter<'a> {
         }
     }
 
-    pub fn write_string(&mut self, value: String) -> Result<usize, BinaryError> {
-        let bytes = value.as_bytes();
+    pub fn write_string<S: AsRef<str>>(&mut self, value: S) -> Result<usize, BinaryError> {
+        let bytes = value.as_ref().as_bytes();
 
         self.write_usize(bytes.len())?;
 
