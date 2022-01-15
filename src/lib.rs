@@ -1,6 +1,7 @@
 extern crate bincode;
 
 use std::string::FromUtf8Error;
+use thiserror::Error;
 
 use bincode::{deserialize, serialize};
 
@@ -11,10 +12,13 @@ pub struct BinaryReader<'a> {
     stream: &'a mut dyn Stream,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum BinaryError {
+    #[error(transparent)]
     StreamError(StreamError),
+    #[error(transparent)]
     BinCodeErr(Box<bincode::ErrorKind>),
+    #[error(transparent)]
     Utf8Error(FromUtf8Error),
 }
 
@@ -36,12 +40,17 @@ impl From<StreamError> for BinaryError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Error)]
 pub enum StreamError {
+    #[error("failed to open stream")]
     OpenError,
+    #[error("failed to write to stream")]
     WriteError,
+    #[error("failed to read from stream")]
     ReadError,
+    #[error("failed to seek in stream")]
     SeekError,
+    #[error("failed to tell in stream")]
     TellError,
 }
 
