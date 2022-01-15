@@ -302,6 +302,8 @@ fn read_out_of_range() {
         return;
     }
 
+    println!("read_out_of_range: {}", reader.get_cur_pos().unwrap());
+
     if reader.read_f32().is_err() {
         cleanup("out_of_range");
         panic!("Out of range");
