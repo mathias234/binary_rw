@@ -38,7 +38,7 @@ impl Stream for Memorystream {
 
     fn read(&mut self, buffer: &mut Vec<u8>) -> Result<usize, StreamError> {
         if self.position + buffer.len() > self.buffer.len() {
-            return Err(StreamError::ReadError);
+            return Err(StreamError::ReadPastEof);
         }
 
         let mut idx = 0;

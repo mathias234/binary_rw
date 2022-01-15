@@ -14,50 +14,31 @@ pub struct Filestream {
 
 impl Filestream {
     pub fn new(filepath: &str, open_type: OpenType) -> Result<Filestream, StreamError> {
-        let file;
-
-        match open_type {
-            OpenType::OpenAndCreate => file = fs::File::create(filepath),
-            OpenType::Open => file = fs::File::open(filepath),
-        }
-
-        match file {
-            Ok(f) => Ok(Filestream { file: f }),
-            Err(_) => Err(StreamError::OpenError),
-        }
+        let file = match open_type {
+            OpenType::OpenAndCreate => fs::File::create(filepath)?,
+            OpenType::Open => fs::File::open(filepath)?,
+        };
+        Ok(Filestream { file })
     }
 }
 
 impl Stream for Filestream {
     fn write(&mut self, bytes: &Vec<u8>) -> Result<usize, StreamError> {
-        match self.file.write(bytes) {
-            Ok(res) => Ok(res),
-            Err(_) => Err(StreamError::WriteError),
-        }
+        Ok(self.file.write(bytes)?)
     }
 
     fn read(&mut self, buffer: &mut Vec<u8>) -> Result<usize, StreamError> {
-        if self.tell().unwrap() + buffer.len() > self.file.metadata().unwrap().len() as usize {
-            return Err(StreamError::ReadError);
+        if self.tell().unwrap() + buffer.len() > self.file.metadata()?.len() as usize {
+            return Err(StreamError::ReadPastEof);
         }
-
-        match self.file.read(buffer) {
-            Ok(res) => Ok(res),
-            Err(_) => Err(StreamError::ReadError),
-        }
+        Ok(self.file.read(buffer)?)
     }
 
     fn seek(&mut self, to: usize) -> Result<usize, StreamError> {
-        match self.file.seek(SeekFrom::Start(to as u64)) {
-            Ok(res) => Ok(res as usize),
-            Err(_) => Err(StreamError::SeekError),
-        }
+        Ok(self.file.seek(SeekFrom::Start(to as u64))? as usize)
     }
 
     fn tell(&mut self) -> Result<usize, StreamError> {
-        match self.file.seek(SeekFrom::Current(0)) {
-            Ok(res) => Ok(res as usize),
-            Err(_) => Err(StreamError::TellError),
-        }
+        Ok(self.file.seek(SeekFrom::Current(0))? as usize)
     }
 }

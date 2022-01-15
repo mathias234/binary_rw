@@ -42,16 +42,10 @@ impl From<StreamError> for BinaryError {
 
 #[derive(Debug, Error)]
 pub enum StreamError {
-    #[error("failed to open stream")]
-    OpenError,
-    #[error("failed to write to stream")]
-    WriteError,
-    #[error("failed to read from stream")]
-    ReadError,
-    #[error("failed to seek in stream")]
-    SeekError,
-    #[error("failed to tell in stream")]
-    TellError,
+    #[error("attempt to read past EOF")]
+    ReadPastEof,
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
 }
 
 pub trait Stream {

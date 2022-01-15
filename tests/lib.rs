@@ -7,15 +7,18 @@ use binary_rw::{
 };
 
 fn create_writer_stream(name: &str) -> Filestream {
-    Filestream::new(name, OpenType::OpenAndCreate).expect("Failed to open stream")
+    let name = format!("{}.test", name);
+    Filestream::new(&name, OpenType::OpenAndCreate).expect("Failed to open stream")
 }
 
 fn create_reader_stream(name: &str) -> Filestream {
-    Filestream::new(name, OpenType::Open).expect("Failed to open stream")
+    let name = format!("{}.test", name);
+    Filestream::new(&name, OpenType::Open).expect("Failed to open stream")
 }
 
 fn cleanup(name: &str) {
-    std::fs::remove_file(name).expect("Failure to delete file");
+    let name = format!("{}.test", name);
+    std::fs::remove_file(&name).expect("Failure to delete file");
 }
 
 #[test]
@@ -303,7 +306,6 @@ fn read_out_of_range() {
         cleanup("out_of_range");
         panic!("Out of range");
     }
-
 }
 
 #[test]
@@ -376,6 +378,9 @@ fn write_to_filestream_overlapping() {
     writer.write_f32(4.0).expect("Failed to overwrite f32");
     writer.write_f32(5.0).expect("Failed to overwrite f32");
     writer.write_f32(6.0).expect("Failed to overwrite f32");
+
+    let file = std::fs::File::open("filestream_overlapping.test").unwrap();
+    eprintln!("File size is {}", file.metadata().unwrap().len());
 
     let mut stream = create_reader_stream("filestream_overlapping");
     let mut reader = BinaryReader::new(&mut stream);
