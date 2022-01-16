@@ -2,6 +2,7 @@ use crate::{Stream, StreamError};
 use std::fs;
 use std::io::prelude::*;
 use std::io::SeekFrom;
+use std::path::Path;
 
 pub enum OpenType {
     OpenAndCreate,
@@ -13,10 +14,10 @@ pub struct Filestream {
 }
 
 impl Filestream {
-    pub fn new(filepath: &str, open_type: OpenType) -> Result<Filestream, StreamError> {
+    pub fn new<P: AsRef<Path>>(path: P, open_type: OpenType) -> Result<Filestream, StreamError> {
         let file = match open_type {
-            OpenType::OpenAndCreate => fs::File::create(filepath)?,
-            OpenType::Open => fs::File::open(filepath)?,
+            OpenType::OpenAndCreate => fs::File::create(path)?,
+            OpenType::Open => fs::File::open(path)?,
         };
         Ok(Filestream { file })
     }
