@@ -329,6 +329,28 @@ fn read_write_string() {
 }
 
 #[test]
+fn read_write_test_bool() {
+    let positive = true;
+    let negative = false;
+    let mut stream = create_writer_stream("bool");
+    let mut writer = BinaryWriter::new(&mut stream);
+
+    writer.write_bool(positive).expect("Failed to write bool");
+    writer.write_bool(negative).expect("Failed to write bool");
+
+    let mut stream = create_reader_stream("bool");
+    let mut reader = BinaryReader::new(&mut stream);
+
+    let read_positive = reader.read_bool().expect("Failed to read bool");
+    let read_negative = reader.read_bool().expect("Failed to read bool");
+
+    assert_eq!(positive, read_positive);
+    assert_eq!(negative, read_negative);
+
+    cleanup("bool")
+}
+
+#[test]
 fn read_write_from_memorystream() {
     let value_a = 3.0;
     let value_b = 5.0;
