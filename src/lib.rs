@@ -75,6 +75,11 @@ impl<'a> BinaryReader<'a> {
         Ok(String::from_utf8(chars)?)
     }
 
+    pub fn read_bool(&mut self) -> Result<bool, BinaryError> {
+        let value = self.read_u8()?;
+        Ok(value > 0)
+    }
+
     pub fn read_f32(&mut self) -> Result<f32, BinaryError> {
         let mut buffer: Vec<u8> = vec![0; 4];
         self.stream.read(&mut buffer)?;
@@ -176,6 +181,11 @@ impl<'a> BinaryWriter<'a> {
 
         self.write_usize(bytes.len())?;
         Ok(self.stream.write(&bytes.to_vec())?)
+    }
+
+    pub fn write_bool(&mut self, value: bool) -> Result<usize, BinaryError> {
+        let written = self.write_u8(if value { 1 } else { 0 })?;
+        Ok(written)
     }
 
     pub fn write_f32(&mut self, value: f32) -> Result<usize, BinaryError> {
