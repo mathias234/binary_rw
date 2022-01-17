@@ -1,7 +1,7 @@
 use crate::{Stream, StreamError};
 use std::fs;
 use std::io::prelude::*;
-use std::io::SeekFrom;
+use std::io::{Error, ErrorKind, Read, SeekFrom, Write};
 use std::path::Path;
 
 pub enum OpenType {
@@ -24,22 +24,33 @@ impl Filestream {
 }
 
 impl Stream for Filestream {
-    fn write(&mut self, bytes: &Vec<u8>) -> Result<usize, StreamError> {
-        Ok(self.file.write(bytes)?)
-    }
-
-    fn read(&mut self, buffer: &mut Vec<u8>) -> Result<usize, StreamError> {
-        if self.tell().unwrap() + buffer.len() > self.file.metadata()?.len() as usize {
-            return Err(StreamError::ReadPastEof);
-        }
-        Ok(self.file.read(buffer)?)
-    }
-
     fn seek(&mut self, to: usize) -> Result<usize, StreamError> {
         Ok(self.file.seek(SeekFrom::Start(to as u64))? as usize)
     }
 
     fn tell(&mut self) -> Result<usize, StreamError> {
         Ok(self.file.seek(SeekFrom::Current(0))? as usize)
+    }
+}
+
+impl Read for Filestream {
+    fn read(&mut self, buffer: &mut [u8]) -> std::io::Result<usize> {
+        if self.tell().unwrap() + buffer.len() > self.file.metadata()?.len() as usize {
+            return Err(Error::new(
+                ErrorKind::UnexpectedEof,
+                StreamError::ReadPastEof,
+            ));
+        }
+        Ok(self.file.read(buffer)?)
+    }
+}
+
+impl Write for Filestream {
+    fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
+        self.file.write(bytes)
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        self.file.flush()
     }
 }

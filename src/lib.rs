@@ -1,5 +1,6 @@
 extern crate bincode;
 
+use std::io::{Read, Write};
 use std::string::FromUtf8Error;
 use thiserror::Error;
 
@@ -20,6 +21,8 @@ pub enum BinaryError {
     BinCodeErr(Box<bincode::ErrorKind>),
     #[error(transparent)]
     Utf8Error(FromUtf8Error),
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
 }
 
 impl From<FromUtf8Error> for BinaryError {
@@ -48,9 +51,7 @@ pub enum StreamError {
     Io(#[from] std::io::Error),
 }
 
-pub trait Stream {
-    fn write(&mut self, bytes: &Vec<u8>) -> Result<usize, StreamError>;
-    fn read(&mut self, buffer: &mut Vec<u8>) -> Result<usize, StreamError>;
+pub trait Stream: Read + Write {
     fn seek(&mut self, to: usize) -> Result<usize, StreamError>;
     fn tell(&mut self) -> Result<usize, StreamError>;
 }
