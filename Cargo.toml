@@ -11,5 +11,4 @@ keywords = ["binary", "reader", "writer"]
 license = "MIT"
 
 [dependencies]
-bincode = "1.2.1"
 thiserror = "1"
