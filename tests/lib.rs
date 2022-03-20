@@ -391,6 +391,15 @@ fn write_to_memorystream_overlapping() {
 }
 
 #[test]
+fn write_to_memorystream_into_vec() {
+    let mut stream = Memorystream::new().expect("Error");
+    let mut writer = BinaryWriter::new(&mut stream);
+    writer.write_f32(1.0).expect("Failed to write f32");
+    let vec: Vec<u8> = stream.into();
+    assert_eq!(4, vec.len());
+}
+
+#[test]
 fn write_to_filestream_overlapping() {
     let mut stream = create_writer_stream("filestream_overlapping");
     let mut writer = BinaryWriter::new(&mut stream);
