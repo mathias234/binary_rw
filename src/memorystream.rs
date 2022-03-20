@@ -74,6 +74,15 @@ impl Write for Memorystream {
     }
 }
 
+impl From<Vec<u8>> for Memorystream {
+    fn from(buffer: Vec<u8>) -> Self {
+        Memorystream {
+            buffer,
+            position: 0,
+        }
+    }
+}
+
 impl Into<Vec<u8>> for Memorystream {
     fn into(self) -> Vec<u8> {
         self.buffer
