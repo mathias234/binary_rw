@@ -118,12 +118,28 @@ impl<'a> BinaryReader<'a> {
         decode!(self.endian, buffer, f64);
     }
 
+    #[cfg(target_arch = "wasm32")]
+    pub fn read_isize(&mut self) -> Result<isize, BinaryError> {
+        let mut buffer: [u8; 4] = [0; 4];
+        self.stream.read(&mut buffer)?;
+        decode!(self.endian, buffer, isize);
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn read_isize(&mut self) -> Result<isize, BinaryError> {
         let mut buffer: [u8; 8] = [0; 8];
         self.stream.read(&mut buffer)?;
         decode!(self.endian, buffer, isize);
     }
 
+    #[cfg(target_arch = "wasm32")]
+    pub fn read_usize(&mut self) -> Result<usize, BinaryError> {
+        let mut buffer: [u8; 4] = [0; 4];
+        self.stream.read(&mut buffer)?;
+        decode!(self.endian, buffer, usize);
+    }
+
+    #[cfg(not(target_arch = "wasm32"))]
     pub fn read_usize(&mut self) -> Result<usize, BinaryError> {
         let mut buffer: [u8; 8] = [0; 8];
         self.stream.read(&mut buffer)?;
