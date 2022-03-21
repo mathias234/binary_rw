@@ -266,7 +266,7 @@ impl<'a> BinaryWriter<'a> {
         encode!(self.endian, &value, self.stream);
     }
 
-    pub fn write_bytes(&mut self, data: Vec<u8>) -> Result<usize, BinaryError> {
-        Ok(self.stream.write(&data)?)
+    pub fn write_bytes<B: AsRef<[u8]>>(&mut self, data: B) -> Result<usize, BinaryError> {
+        Ok(self.stream.write(data.as_ref())?)
     }
 }
