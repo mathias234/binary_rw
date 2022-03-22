@@ -5,7 +5,7 @@ use std::io::prelude::*;
 use std::io::{Error, ErrorKind, Read, SeekFrom, Write};
 use std::path::Path;
 
-/// Indicates how the stream should open the underlying file.
+/// Indicates how the file stream should open the underlying file.
 pub enum OpenType {
     /// Open and create the file if it does not exist.
     OpenAndCreate,
