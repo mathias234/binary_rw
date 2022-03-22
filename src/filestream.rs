@@ -1,5 +1,5 @@
 //! Stream for operating on files.
-use crate::{Stream, StreamError};
+use crate::{Stream, Result, BinaryError};
 use std::fs;
 use std::io::prelude::*;
 use std::io::{Error, ErrorKind, Read, SeekFrom, Write};
@@ -20,7 +20,7 @@ pub struct Filestream {
 
 impl Filestream {
     /// Create a file stream.
-    pub fn new<P: AsRef<Path>>(path: P, open_type: OpenType) -> Result<Filestream, StreamError> {
+    pub fn new<P: AsRef<Path>>(path: P, open_type: OpenType) -> Result<Filestream> {
         let file = match open_type {
             OpenType::OpenAndCreate => fs::File::create(path)?,
             OpenType::Open => fs::File::open(path)?,
@@ -30,11 +30,11 @@ impl Filestream {
 }
 
 impl Stream for Filestream {
-    fn seek(&mut self, to: usize) -> Result<usize, StreamError> {
+    fn seek(&mut self, to: usize) -> Result<usize> {
         Ok(self.file.seek(SeekFrom::Start(to as u64))? as usize)
     }
 
-    fn tell(&mut self) -> Result<usize, StreamError> {
+    fn tell(&mut self) -> Result<usize> {
         Ok(self.file.seek(SeekFrom::Current(0))? as usize)
     }
 }
@@ -44,7 +44,7 @@ impl Read for Filestream {
         if self.tell().unwrap() + buffer.len() > self.file.metadata()?.len() as usize {
             return Err(Error::new(
                 ErrorKind::UnexpectedEof,
-                StreamError::ReadPastEof,
+                BinaryError::ReadPastEof,
             ));
         }
         Ok(self.file.read(buffer)?)
