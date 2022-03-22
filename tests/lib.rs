@@ -27,13 +27,13 @@ fn seek_test() {
         .write_bytes([16; 32].to_vec())
         .expect("Failed to write bytes");
     writer.seek(seek_loc).expect("Writer seek error");
-    assert_eq!(writer.get_cur_pos().expect("Failed to get pos"), seek_loc);
+    assert_eq!(writer.tell().expect("Failed to get pos"), seek_loc);
     writer.write_f32(temp).expect("Failed to write f32");
 
     let mut stream = create_reader_stream("seek");
     let mut reader = BinaryReader::new(&mut stream);
     reader.seek(seek_loc).expect("Writer seek error");
-    assert_eq!(reader.get_cur_pos().expect("Failed to get pos"), seek_loc);
+    assert_eq!(reader.tell().expect("Failed to get pos"), seek_loc);
     let read_temp = reader.read_f32().expect("Failed to read file");
 
     assert_eq!(temp, read_temp);
@@ -296,7 +296,7 @@ fn read_out_of_range() {
         return;
     }
 
-    println!("read_out_of_range: {}", reader.get_cur_pos().unwrap());
+    println!("read_out_of_range: {}", reader.tell().unwrap());
 
     if reader.read_f32().is_err() {
         cleanup("out_of_range");
