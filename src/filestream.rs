@@ -1,19 +1,25 @@
+//! Stream for operating on files.
 use crate::{Stream, StreamError};
 use std::fs;
 use std::io::prelude::*;
 use std::io::{Error, ErrorKind, Read, SeekFrom, Write};
 use std::path::Path;
 
+/// Indicates how the stream should open the underlying file.
 pub enum OpenType {
+    /// Open and create the file if it does not exist.
     OpenAndCreate,
+    /// Open the file for reading.
     Open,
 }
 
+/// Stream that wraps a file.
 pub struct Filestream {
     file: fs::File,
 }
 
 impl Filestream {
+    /// Create a file stream.
     pub fn new<P: AsRef<Path>>(path: P, open_type: OpenType) -> Result<Filestream, StreamError> {
         let file = match open_type {
             OpenType::OpenAndCreate => fs::File::create(path)?,
