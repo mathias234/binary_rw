@@ -6,8 +6,8 @@ mod error;
 mod filestream;
 mod memorystream;
 
-pub use filestream::{Filestream, OpenType};
-pub use memorystream::Memorystream;
+pub use filestream::{FileStream, OpenType};
+pub use memorystream::MemoryStream;
 pub use error::BinaryError;
 
 /// Result type for binary errors.

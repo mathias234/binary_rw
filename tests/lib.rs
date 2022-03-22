@@ -1,13 +1,13 @@
-use binary_rw::{BinaryReader, BinaryWriter, filestream::{Filestream, OpenType}, memorystream::Memorystream};
+use binary_rw::{BinaryReader, BinaryWriter, FileStream, MemoryStream, OpenType};
 
-fn create_writer_stream(name: &str) -> Filestream {
+fn create_writer_stream(name: &str) -> FileStream {
     let name = format!("{}.test", name);
-    Filestream::new(&name, OpenType::OpenAndCreate).expect("Failed to open stream")
+    FileStream::new(&name, OpenType::OpenAndCreate).expect("Failed to open stream")
 }
 
-fn create_reader_stream(name: &str) -> Filestream {
+fn create_reader_stream(name: &str) -> FileStream {
     let name = format!("{}.test", name);
-    Filestream::new(&name, OpenType::Open).expect("Failed to open stream")
+    FileStream::new(&name, OpenType::Open).expect("Failed to open stream")
 }
 
 fn cleanup(name: &str) {
@@ -348,7 +348,7 @@ fn read_write_test_bool() {
 fn read_write_from_memorystream() {
     let value_a = 3.0;
     let value_b = 5.0;
-    let mut stream = Memorystream::new();
+    let mut stream = MemoryStream::new();
     let mut writer = BinaryWriter::new(&mut stream);
     writer.write_f32(value_a).expect("Failed to write f32");
     writer.write_f32(value_b).expect("Failed to write f32");
@@ -363,7 +363,7 @@ fn read_write_from_memorystream() {
 
 #[test]
 fn write_to_memorystream_overlapping() {
-    let mut stream = Memorystream::new();
+    let mut stream = MemoryStream::new();
     let mut writer = BinaryWriter::new(&mut stream);
     writer.write_f32(1.0).expect("Failed to write f32");
     writer.write_f32(2.0).expect("Failed to write f32");
@@ -386,7 +386,7 @@ fn write_to_memorystream_overlapping() {
 
 #[test]
 fn write_to_memorystream_into_vec() {
-    let mut stream = Memorystream::new();
+    let mut stream = MemoryStream::new();
     let mut writer = BinaryWriter::new(&mut stream);
     writer.write_f32(1.0).expect("Failed to write f32");
     let vec: Vec<u8> = stream.into();
