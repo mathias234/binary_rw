@@ -12,3 +12,6 @@ license = "MIT"
 
 [dependencies]
 thiserror = "1"
+
+[dev-dependencies]
+anyhow = "1"
