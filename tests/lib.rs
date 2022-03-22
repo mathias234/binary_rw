@@ -26,13 +26,13 @@ fn seek_test() {
     writer
         .write_bytes([16; 32].to_vec())
         .expect("Failed to write bytes");
-    writer.seek_to(seek_loc).expect("Writer seek error");
+    writer.seek(seek_loc).expect("Writer seek error");
     assert_eq!(writer.get_cur_pos().expect("Failed to get pos"), seek_loc);
     writer.write_f32(temp).expect("Failed to write f32");
 
     let mut stream = create_reader_stream("seek");
     let mut reader = BinaryReader::new(&mut stream);
-    reader.seek_to(seek_loc).expect("Writer seek error");
+    reader.seek(seek_loc).expect("Writer seek error");
     assert_eq!(reader.get_cur_pos().expect("Failed to get pos"), seek_loc);
     let read_temp = reader.read_f32().expect("Failed to read file");
 
@@ -354,7 +354,7 @@ fn read_write_from_memorystream() {
     writer.write_f32(value_b).expect("Failed to write f32");
 
     let mut reader = BinaryReader::new(&mut stream);
-    reader.seek_to(0).expect("Failed to seek");
+    reader.seek(0).expect("Failed to seek");
     let value = reader.read_f32().expect("Failed to read f32");
     assert_eq!(value_a, value);
     let value = reader.read_f32().expect("Failed to read f32");
@@ -369,13 +369,13 @@ fn write_to_memorystream_overlapping() {
     writer.write_f32(2.0).expect("Failed to write f32");
     writer.write_f32(3.0).expect("Failed to write f32");
 
-    writer.seek_to(0).expect("Failed to seek to 0");
+    writer.seek(0).expect("Failed to seek to 0");
     writer.write_f32(4.0).expect("Failed to overwrite f32");
     writer.write_f32(5.0).expect("Failed to overwrite f32");
     writer.write_f32(6.0).expect("Failed to overwrite f32");
 
     let mut reader = BinaryReader::new(&mut stream);
-    reader.seek_to(0).expect("Failed to seek");
+    reader.seek(0).expect("Failed to seek");
     let value = reader.read_f32().expect("Failed to read f32");
     assert_eq!(4.0, value);
     let value = reader.read_f32().expect("Failed to read f32");
@@ -401,7 +401,7 @@ fn write_to_filestream_overlapping() {
     writer.write_f32(2.0).expect("Failed to write f32");
     writer.write_f32(3.0).expect("Failed to write f32");
 
-    writer.seek_to(0).expect("Failed to seek to 0");
+    writer.seek(0).expect("Failed to seek to 0");
     writer.write_f32(4.0).expect("Failed to overwrite f32");
     writer.write_f32(5.0).expect("Failed to overwrite f32");
     writer.write_f32(6.0).expect("Failed to overwrite f32");
