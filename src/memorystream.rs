@@ -1,12 +1,15 @@
+//! Stream for operating on in-memory buffers.
 use crate::{Stream, StreamError};
 use std::io::{Error, ErrorKind, Read, Write};
 
+/// Stream that wraps an in-memory buffer.
 pub struct Memorystream {
     buffer: Vec<u8>,
     position: usize,
 }
 
 impl Memorystream {
+    /// Create a memory stream.
     pub fn new() -> Result<Memorystream, StreamError> {
         Ok(Memorystream {
             buffer: Vec::new(),

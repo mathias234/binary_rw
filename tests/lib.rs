@@ -1,10 +1,4 @@
-extern crate binary_rw;
-
-use binary_rw::{
-    filestream::{Filestream, OpenType},
-    memorystream::Memorystream,
-    BinaryReader, BinaryWriter,
-};
+use binary_rw::{BinaryReader, BinaryWriter, filestream::{Filestream, OpenType}, memorystream::Memorystream};
 
 fn create_writer_stream(name: &str) -> Filestream {
     let name = format!("{}.test", name);
