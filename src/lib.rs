@@ -62,13 +62,16 @@ pub struct BinaryReader<'a> {
 }
 
 impl<'a> BinaryReader<'a> {
+
+    /*
     /// Create a binary reader.
     pub fn new(stream: &'a mut impl Stream) -> Self {
         Self::new_endian(stream, Default::default())
     }
+    */
 
     /// Create a binary reader with the given endianness.
-    pub fn new_endian(stream: &'a mut impl Stream, endian: Endian) -> Self {
+    pub fn new(stream: &'a mut impl Stream, endian: Endian) -> Self {
         Self { stream, endian }
     }
 
@@ -213,13 +216,16 @@ pub struct BinaryWriter<'a> {
 }
 
 impl<'a> BinaryWriter<'a> {
+
+    /*
     /// Create a binary writer.
     pub fn new(stream: &'a mut impl Stream) -> Self {
         Self::new_endian(stream, Default::default())
     }
+    */
 
     /// Create a binary writer with the given endianness.
-    pub fn new_endian(stream: &'a mut impl Stream, endian: Endian) -> Self {
+    pub fn new(stream: &'a mut impl Stream, endian: Endian) -> Self {
         Self { stream, endian }
     }
 
