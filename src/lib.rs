@@ -78,7 +78,7 @@ impl<'a> BinaryReader<'a> {
     }
 
     /// Get the current position.
-    pub fn get_cur_pos(&mut self) -> Result<usize> {
+    pub fn tell(&mut self) -> Result<usize> {
         Ok(self.stream.tell()?)
     }
 
@@ -229,7 +229,7 @@ impl<'a> BinaryWriter<'a> {
     }
 
     /// Get the current position.
-    pub fn get_cur_pos(&mut self) -> Result<usize> {
+    pub fn tell(&mut self) -> Result<usize> {
         Ok(self.stream.tell()?)
     }
 
