@@ -1,5 +1,5 @@
 //! Stream for operating on in-memory buffers.
-use crate::{Stream, StreamError};
+use crate::{Stream, BinaryError, Result};
 use std::io::{Error, ErrorKind, Read, Write};
 
 /// Stream that wraps an in-memory buffer.
@@ -19,12 +19,12 @@ impl Memorystream {
 }
 
 impl Stream for Memorystream {
-    fn seek(&mut self, to: usize) -> Result<usize, StreamError> {
+    fn seek(&mut self, to: usize) -> Result<usize> {
         self.position = to;
         Ok(self.position)
     }
 
-    fn tell(&mut self) -> Result<usize, StreamError> {
+    fn tell(&mut self) -> Result<usize> {
         Ok(self.position)
     }
 }
@@ -34,7 +34,7 @@ impl Read for Memorystream {
         if self.position + buffer.len() > self.buffer.len() {
             return Err(Error::new(
                 ErrorKind::UnexpectedEof,
-                StreamError::ReadPastEof,
+                BinaryError::ReadPastEof,
             ));
         }
 
