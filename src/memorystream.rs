@@ -10,11 +10,11 @@ pub struct Memorystream {
 
 impl Memorystream {
     /// Create a memory stream.
-    pub fn new() -> Result<Memorystream, StreamError> {
-        Ok(Memorystream {
+    pub fn new() -> Self {
+        Memorystream {
             buffer: Vec::new(),
             position: 0,
-        })
+        }
     }
 }
 
