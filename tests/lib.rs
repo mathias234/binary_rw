@@ -348,7 +348,7 @@ fn read_write_test_bool() {
 fn read_write_from_memorystream() {
     let value_a = 3.0;
     let value_b = 5.0;
-    let mut stream = Memorystream::new().expect("Error");
+    let mut stream = Memorystream::new();
     let mut writer = BinaryWriter::new(&mut stream);
     writer.write_f32(value_a).expect("Failed to write f32");
     writer.write_f32(value_b).expect("Failed to write f32");
@@ -363,7 +363,7 @@ fn read_write_from_memorystream() {
 
 #[test]
 fn write_to_memorystream_overlapping() {
-    let mut stream = Memorystream::new().expect("Error");
+    let mut stream = Memorystream::new();
     let mut writer = BinaryWriter::new(&mut stream);
     writer.write_f32(1.0).expect("Failed to write f32");
     writer.write_f32(2.0).expect("Failed to write f32");
@@ -386,7 +386,7 @@ fn write_to_memorystream_overlapping() {
 
 #[test]
 fn write_to_memorystream_into_vec() {
-    let mut stream = Memorystream::new().expect("Error");
+    let mut stream = Memorystream::new();
     let mut writer = BinaryWriter::new(&mut stream);
     writer.write_f32(1.0).expect("Failed to write f32");
     let vec: Vec<u8> = stream.into();

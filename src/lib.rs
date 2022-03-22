@@ -4,8 +4,11 @@ use std::io::{Read, Write};
 use std::string::FromUtf8Error;
 use thiserror::Error;
 
-pub mod filestream;
-pub mod memorystream;
+mod filestream;
+mod memorystream;
+
+pub use filestream::{Filestream, OpenType};
+pub use memorystream::Memorystream;
 
 macro_rules! encode {
     ($endian:expr, $value:expr, $stream:expr) => {
