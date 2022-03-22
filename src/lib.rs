@@ -73,7 +73,7 @@ impl<'a> BinaryReader<'a> {
     }
 
     /// Seek to a position.
-    pub fn seek_to(&mut self, to: usize) -> Result<usize> {
+    pub fn seek(&mut self, to: usize) -> Result<usize> {
         Ok(self.stream.seek(to)?)
     }
 
@@ -224,7 +224,7 @@ impl<'a> BinaryWriter<'a> {
     }
 
     /// Seek to a position.
-    pub fn seek_to(&mut self, to: usize) -> Result<usize> {
+    pub fn seek(&mut self, to: usize) -> Result<usize> {
         Ok(self.stream.seek(to)?)
     }
 
