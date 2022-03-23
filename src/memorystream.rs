@@ -1,40 +1,40 @@
 //! Stream for operating on in-memory buffers.
-use crate::{Stream, StreamError};
+use crate::{Stream, BinaryError, Result};
 use std::io::{Error, ErrorKind, Read, Write};
 
 /// Stream that wraps an in-memory buffer.
-pub struct Memorystream {
+pub struct MemoryStream {
     buffer: Vec<u8>,
     position: usize,
 }
 
-impl Memorystream {
+impl MemoryStream {
     /// Create a memory stream.
-    pub fn new() -> Result<Memorystream, StreamError> {
-        Ok(Memorystream {
+    pub fn new() -> Self {
+        MemoryStream {
             buffer: Vec::new(),
             position: 0,
-        })
+        }
     }
 }
 
-impl Stream for Memorystream {
-    fn seek(&mut self, to: usize) -> Result<usize, StreamError> {
+impl Stream for MemoryStream {
+    fn seek(&mut self, to: usize) -> Result<usize> {
         self.position = to;
         Ok(self.position)
     }
 
-    fn tell(&mut self) -> Result<usize, StreamError> {
+    fn tell(&mut self) -> Result<usize> {
         Ok(self.position)
     }
 }
 
-impl Read for Memorystream {
+impl Read for MemoryStream {
     fn read(&mut self, buffer: &mut [u8]) -> std::io::Result<usize> {
         if self.position + buffer.len() > self.buffer.len() {
             return Err(Error::new(
                 ErrorKind::UnexpectedEof,
-                StreamError::ReadPastEof,
+                BinaryError::ReadPastEof,
             ));
         }
 
@@ -50,7 +50,7 @@ impl Read for Memorystream {
     }
 }
 
-impl Write for Memorystream {
+impl Write for MemoryStream {
     fn write(&mut self, bytes: &[u8]) -> std::io::Result<usize> {
         let bytes_to_end = self.buffer.len() - self.position;
         if bytes.len() > bytes_to_end {
@@ -77,16 +77,16 @@ impl Write for Memorystream {
     }
 }
 
-impl From<Vec<u8>> for Memorystream {
+impl From<Vec<u8>> for MemoryStream {
     fn from(buffer: Vec<u8>) -> Self {
-        Memorystream {
+        MemoryStream {
             buffer,
             position: 0,
         }
     }
 }
 
-impl Into<Vec<u8>> for Memorystream {
+impl Into<Vec<u8>> for MemoryStream {
     fn into(self) -> Vec<u8> {
         self.buffer
     }
