@@ -12,9 +12,11 @@ license = "MIT"
 
 [features]
 wasm32 = []
+serde = ["serde_core"]
 
 [dependencies]
 thiserror = "1"
+serde_core = { version = "1", optional = true, package = "serde" }
 
 [dev-dependencies]
 anyhow = "1"

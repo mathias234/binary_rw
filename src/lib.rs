@@ -13,6 +13,9 @@ mod error;
 mod filestream;
 mod memorystream;
 
+#[cfg(feature = "serde")]
+pub mod serde;
+
 pub use filestream::{FileStream, OpenType};
 pub use memorystream::MemoryStream;
 pub use error::BinaryError;
@@ -69,13 +72,6 @@ pub struct BinaryReader<'a> {
 }
 
 impl<'a> BinaryReader<'a> {
-
-    /*
-    /// Create a binary reader.
-    pub fn new(stream: &'a mut impl Stream) -> Self {
-        Self::new_endian(stream, Default::default())
-    }
-    */
 
     /// Create a binary reader with the given endianness.
     pub fn new(stream: &'a mut impl Stream, endian: Endian) -> Self {
@@ -231,13 +227,6 @@ pub struct BinaryWriter<'a> {
 }
 
 impl<'a> BinaryWriter<'a> {
-
-    /*
-    /// Create a binary writer.
-    pub fn new(stream: &'a mut impl Stream) -> Self {
-        Self::new_endian(stream, Default::default())
-    }
-    */
 
     /// Create a binary writer with the given endianness.
     pub fn new(stream: &'a mut impl Stream, endian: Endian) -> Self {
