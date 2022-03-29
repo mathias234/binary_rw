@@ -1,10 +1,10 @@
 //! Library for reading and writing binary data.
 //!
-//! If the `wasm32` feature is enabled then length 
-//! prefixed strings use a `u32` for the length so 
+//! If the `wasm32` feature is enabled then length
+//! prefixed strings use a `u32` for the length so
 //! that the encoded data is portable across platforms.
 //!
-//! Otherwise string length is encoded using `usize` which 
+//! Otherwise string length is encoded using `usize` which
 //! may vary across platforms.
 #![deny(missing_docs)]
 use std::io::{Read, Write};
@@ -16,9 +16,9 @@ mod memorystream;
 #[cfg(feature = "serde")]
 pub mod serde;
 
+pub use error::BinaryError;
 pub use filestream::{FileStream, OpenType};
 pub use memorystream::MemoryStream;
-pub use error::BinaryError;
 
 /// Result type for binary errors.
 pub type Result<T> = std::result::Result<T, BinaryError>;
@@ -72,7 +72,6 @@ pub struct BinaryReader<'a> {
 }
 
 impl<'a> BinaryReader<'a> {
-
     /// Create a binary reader with the given endianness.
     pub fn new(stream: &'a mut impl Stream, endian: Endian) -> Self {
         Self { stream, endian }
@@ -102,6 +101,11 @@ impl<'a> BinaryReader<'a> {
             chars
         };
         Ok(String::from_utf8(chars)?)
+    }
+
+    /// Read a character from the stream.
+    pub fn read_char(&mut self) -> Result<char> {
+        Ok(std::char::from_u32(self.read_u32()?).ok_or_else(|| BinaryError::InvalidChar)?)
     }
 
     /// Read a `bool` from the stream.
@@ -227,7 +231,6 @@ pub struct BinaryWriter<'a> {
 }
 
 impl<'a> BinaryWriter<'a> {
-
     /// Create a binary writer with the given endianness.
     pub fn new(stream: &'a mut impl Stream, endian: Endian) -> Self {
         Self { stream, endian }
@@ -245,7 +248,7 @@ impl<'a> BinaryWriter<'a> {
 
     /// Write a length-prefixed `String` to the stream.
     ///
-    /// The length of the `String` is written as a `usize` 
+    /// The length of the `String` is written as a `usize`
     /// unless the `wasm32` feature is enabled
     /// in which case the length is a `u32`.
     pub fn write_string<S: AsRef<str>>(&mut self, value: S) -> Result<usize> {
@@ -256,6 +259,11 @@ impl<'a> BinaryWriter<'a> {
             self.write_usize(bytes.len())?;
         }
         Ok(self.stream.write(&bytes.to_vec())?)
+    }
+
+    /// Write a character to the stream.
+    pub fn write_char(&mut self, v: char) -> Result<usize> {
+        self.write_u32(v as u32)
     }
 
     /// Write a `bool` to the stream.

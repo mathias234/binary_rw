@@ -1,7 +1,7 @@
 //! Write a `Serialize` implementation to a binary writer.
-use serde::ser::{self, Serialize};
+use super::{Error, Result};
 use crate::BinaryWriter;
-use super::{Result, Error};
+use serde::ser::{self, Serialize};
 
 #[doc(hidden)]
 pub struct SerializeArray<'a, 'b> {
@@ -12,10 +12,7 @@ impl<'a, 'b> ser::SerializeSeq for SerializeArray<'a, 'b> {
     type Ok = usize;
     type Error = Error;
 
-    fn serialize_element<T: ?Sized>(
-        &mut self,
-        value: &T,
-    ) -> Result<()>
+    fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<()>
     where
         T: Serialize,
     {
@@ -32,10 +29,7 @@ impl<'a, 'b> ser::SerializeTuple for SerializeArray<'a, 'b> {
     type Ok = usize;
     type Error = Error;
 
-    fn serialize_element<T: ?Sized>(
-        &mut self,
-        value: &T,
-    ) -> Result<()>
+    fn serialize_element<T: ?Sized>(&mut self, value: &T) -> Result<()>
     where
         T: Serialize,
     {
@@ -51,10 +45,7 @@ impl<'a, 'b> ser::SerializeTupleStruct for SerializeArray<'a, 'b> {
     type Ok = usize;
     type Error = Error;
 
-    fn serialize_field<T: ?Sized>(
-        &mut self,
-        value: &T,
-    ) -> Result<()>
+    fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<()>
     where
         T: Serialize,
     {
@@ -74,11 +65,7 @@ pub struct SerializeObject<'a, 'b> {
 impl<'a, 'b> ser::SerializeStruct for SerializeObject<'a, 'b> {
     type Ok = usize;
     type Error = Error;
-    fn serialize_field<T: ?Sized>(
-        &mut self,
-        key: &'static str,
-        value: &T,
-    ) -> Result<()>
+    fn serialize_field<T: ?Sized>(&mut self, key: &'static str, value: &T) -> Result<()>
     where
         T: Serialize,
     {
@@ -108,10 +95,7 @@ impl<'a, 'b> ser::SerializeMap for SerializeObject<'a, 'b> {
         Ok(())
     }
 
-    fn serialize_value<T: ?Sized>(
-        &mut self,
-        value: &T,
-    ) -> Result<()>
+    fn serialize_value<T: ?Sized>(&mut self, value: &T) -> Result<()>
     where
         T: Serialize,
     {
@@ -123,11 +107,7 @@ impl<'a, 'b> ser::SerializeMap for SerializeObject<'a, 'b> {
         Ok(0)
     }
 
-    fn serialize_entry<K: ?Sized, V: ?Sized>(
-        &mut self,
-        key: &K,
-        value: &V,
-    ) -> Result<()>
+    fn serialize_entry<K: ?Sized, V: ?Sized>(&mut self, key: &K, value: &V) -> Result<()>
     where
         K: Serialize,
         V: Serialize,
@@ -142,10 +122,7 @@ impl<'a, 'b> ser::SerializeTupleVariant for SerializeArray<'a, 'b> {
     type Ok = usize;
     type Error = Error;
 
-    fn serialize_field<T: ?Sized>(
-        &mut self,
-        value: &T,
-    ) -> Result<()>
+    fn serialize_field<T: ?Sized>(&mut self, value: &T) -> Result<()>
     where
         T: Serialize,
     {
@@ -162,11 +139,7 @@ impl<'a, 'b> ser::SerializeStructVariant for SerializeObject<'a, 'b> {
     type Ok = usize;
     type Error = Error;
 
-    fn serialize_field<T: ?Sized>(
-        &mut self,
-        key: &'static str,
-        value: &T,
-    ) -> Result<()>
+    fn serialize_field<T: ?Sized>(&mut self, key: &'static str, value: &T) -> Result<()>
     where
         T: Serialize,
     {
@@ -247,9 +220,7 @@ impl<'a, 'b> ser::Serializer for &'a mut Serializer<'b> {
     }
 
     fn serialize_char(self, v: char) -> Result<Self::Ok> {
-        // A char encoded as UTF-8 takes 4 bytes at most.
-        let mut buf = [0; 4];
-        self.serialize_str(v.encode_utf8(&mut buf))
+        Ok(self.writer.write_char(v)?)
     }
 
     fn serialize_str(self, v: &str) -> Result<Self::Ok> {
@@ -276,10 +247,7 @@ impl<'a, 'b> ser::Serializer for &'a mut Serializer<'b> {
         Ok(self.writer.write_u8(0)?)
     }
 
-    fn serialize_unit_struct(
-        self,
-        _name: &'static str,
-    ) -> Result<Self::Ok> {
+    fn serialize_unit_struct(self, _name: &'static str) -> Result<Self::Ok> {
         self.serialize_unit()
     }
 
@@ -293,11 +261,7 @@ impl<'a, 'b> ser::Serializer for &'a mut Serializer<'b> {
         self.serialize_unit()
     }
 
-    fn serialize_newtype_struct<T>(
-        self,
-        _name: &'static str,
-        value: &T,
-    ) -> Result<Self::Ok>
+    fn serialize_newtype_struct<T>(self, _name: &'static str, value: &T) -> Result<Self::Ok>
     where
         T: ?Sized + Serialize,
     {
@@ -318,20 +282,12 @@ impl<'a, 'b> ser::Serializer for &'a mut Serializer<'b> {
         value.serialize(self)
     }
 
-    fn serialize_seq(
-        self,
-        len: Option<usize>,
-    ) -> Result<Self::SerializeSeq> {
+    fn serialize_seq(self, len: Option<usize>) -> Result<Self::SerializeSeq> {
         self.writer.write_u32(len.map(|l| l as u32).unwrap_or(0))?;
-        Ok(SerializeArray {
-            ser: self,
-        })
+        Ok(SerializeArray { ser: self })
     }
 
-    fn serialize_tuple(
-        self,
-        len: usize,
-    ) -> Result<Self::SerializeTuple> {
+    fn serialize_tuple(self, len: usize) -> Result<Self::SerializeTuple> {
         self.serialize_seq(Some(len))
     }
 
@@ -345,21 +301,12 @@ impl<'a, 'b> ser::Serializer for &'a mut Serializer<'b> {
         self.serialize_seq(Some(len))
     }
 
-    fn serialize_map(
-        self,
-        len: Option<usize>,
-    ) -> Result<Self::SerializeMap> {
+    fn serialize_map(self, len: Option<usize>) -> Result<Self::SerializeMap> {
         self.writer.write_u32(len.map(|l| l as u32).unwrap_or(0))?;
-        Ok(SerializeObject {
-            ser: self,
-        })
+        Ok(SerializeObject { ser: self })
     }
 
-    fn serialize_struct(
-        self,
-        name: &'static str,
-        len: usize,
-    ) -> Result<Self::SerializeStruct> {
+    fn serialize_struct(self, _name: &'static str, len: usize) -> Result<Self::SerializeStruct> {
         self.serialize_map(Some(len))
     }
 

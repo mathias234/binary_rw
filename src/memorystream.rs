@@ -1,5 +1,5 @@
 //! Stream for operating on in-memory buffers.
-use crate::{Stream, BinaryError, Result};
+use crate::{BinaryError, Result, Stream};
 use std::io::{Error, ErrorKind, Read, Write};
 
 /// Stream that wraps an in-memory buffer.

@@ -3,18 +3,20 @@ mod deserializer;
 mod error;
 mod serializer;
 
-use serde::{Serialize, de::DeserializeOwned, de::Deserialize};
+use serde::{de::Deserialize, de::DeserializeOwned, Serialize};
 
-use crate::{Endian, MemoryStream, BinaryWriter, BinaryReader};
+use crate::{BinaryReader, BinaryWriter, Endian, MemoryStream};
 
-pub use {error::Error, serializer::Serializer, deserializer::Deserializer};
+pub use {deserializer::Deserializer, error::Error, serializer::Serializer};
 
 /// Result type for serialization and deserialization.
 pub type Result<T> = std::result::Result<T, Error>;
 
 /// Serialize to an owned buffer.
-pub fn to_vec<T>(value: &T, endian: Endian) -> Result<Vec<u8>> where
-    T: ?Sized + Serialize {
+pub fn to_vec<T>(value: &T, endian: Endian) -> Result<Vec<u8>>
+where
+    T: ?Sized + Serialize,
+{
     let mut stream = MemoryStream::new();
     let writer = BinaryWriter::new(&mut stream, endian);
     let mut serializer = Serializer { writer };
@@ -23,8 +25,10 @@ pub fn to_vec<T>(value: &T, endian: Endian) -> Result<Vec<u8>> where
 }
 
 /// Deserialize from an owned buffer.
-pub fn from_vec<T>(value: Vec<u8>, endian: Endian) -> Result<T> where
-    T: DeserializeOwned {
+pub fn from_vec<T>(value: Vec<u8>, endian: Endian) -> Result<T>
+where
+    T: DeserializeOwned,
+{
     let mut stream: MemoryStream = value.into();
     let reader = BinaryReader::new(&mut stream, endian);
     let mut deserializer = Deserializer { reader };
@@ -34,10 +38,10 @@ pub fn from_vec<T>(value: Vec<u8>, endian: Endian) -> Result<T> where
 
 #[cfg(test)]
 mod tests {
-    use anyhow::Result;
-    use serde::{Serialize, Deserialize};
-    use std::collections::HashMap;
     use super::*;
+    use anyhow::Result;
+    use serde::{Deserialize, Serialize};
+    use std::collections::HashMap;
 
     #[test]
     fn serde_unit() -> Result<()> {
@@ -71,6 +75,15 @@ mod tests {
         let val = String::from("foo");
         let buffer = to_vec(&val, Default::default())?;
         let res: String = from_vec(buffer, Default::default())?;
+        assert_eq!(val, res);
+        Ok(())
+    }
+
+    #[test]
+    fn serde_char() -> Result<()> {
+        let val = 'x';
+        let buffer = to_vec(&val, Default::default())?;
+        let res: char = from_vec(buffer, Default::default())?;
         assert_eq!(val, res);
         Ok(())
     }
@@ -220,7 +233,7 @@ mod tests {
 
     #[test]
     fn serde_struct() -> Result<()> {
-        let val = SimpleStruct {x: 1, y: 2};
+        let val = SimpleStruct { x: 1, y: 2 };
         let buffer = to_vec(&val, Default::default())?;
         let res: SimpleStruct = from_vec(buffer, Default::default())?;
         assert_eq!(val, res);
@@ -264,7 +277,7 @@ mod tests {
 
     #[test]
     fn serde_enum_struct() -> Result<()> {
-        let val = E::Struct {a: 1};
+        let val = E::Struct { a: 1 };
         let buffer = to_vec(&val, Default::default())?;
         let res: E = from_vec(buffer, Default::default())?;
         assert_eq!(val, res);
