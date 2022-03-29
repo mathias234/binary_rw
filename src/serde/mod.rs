@@ -162,4 +162,13 @@ mod tests {
         assert_eq!(val, res);
         Ok(())
     }
+
+    #[test]
+    fn serde_tuple() -> Result<()> {
+        let val = (1u8, String::from("foo"));
+        let buffer = to_vec(&val, Default::default())?;
+        let res: (u8, String) = from_vec(buffer, Default::default())?;
+        assert_eq!(val, res);
+        Ok(())
+    }
 }
