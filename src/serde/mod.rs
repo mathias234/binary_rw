@@ -47,6 +47,24 @@ mod tests {
     }
 
     #[test]
+    fn serde_option_none() -> Result<()> {
+        let val: Option<u8> = None;
+        let buffer = to_vec(&val, Default::default())?;
+        let res: Option<u8> = from_vec(buffer, Default::default())?;
+        assert_eq!(val, res);
+        Ok(())
+    }
+
+    #[test]
+    fn serde_option_some() -> Result<()> {
+        let val = Some(1u8);
+        let buffer = to_vec(&val, Default::default())?;
+        let res: Option<u8> = from_vec(buffer, Default::default())?;
+        assert_eq!(val, res);
+        Ok(())
+    }
+
+    #[test]
     fn serde_string() -> Result<()> {
         let val = String::from("foo");
         let buffer = to_vec(&val, Default::default())?;
