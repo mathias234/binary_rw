@@ -81,11 +81,11 @@ impl<'a, 'b> ser::SerializeStruct for SerializeObject<'a, 'b> {
     where
         T: Serialize,
     {
-
-        //let entry = value.serialize(&mut *self.ser)?;
-
+        println!("Serializing object ...");
+        value.serialize(&mut *self.ser)?;
         Ok(())
     }
+
     fn end(self) -> Result<Self::Ok> {
         Ok(0)
     }
@@ -131,6 +131,8 @@ impl<'a, 'b> ser::SerializeMap for SerializeObject<'a, 'b> {
         K: Serialize,
         V: Serialize,
     {
+        self.serialize_key(key)?;
+        self.serialize_value(value)?;
         Ok(())
     }
 }
@@ -316,14 +318,10 @@ impl<'a, 'b> ser::Serializer for &'a mut Serializer<'b> {
     where
         T: ?Sized + Serialize,
     {
-        /*
         use ser::SerializeMap;
         let mut map = self.serialize_map(Some(1))?;
         map.serialize_entry(variant, value)?;
         map.end()
-        */
-
-        Ok(0)
     }
 
     fn serialize_seq(
@@ -355,6 +353,7 @@ impl<'a, 'b> ser::Serializer for &'a mut Serializer<'b> {
         self,
         len: Option<usize>,
     ) -> Result<Self::SerializeMap> {
+        println!("Serializing a map...");
         self.writer.write_u32(len.map(|l| l as u32).unwrap_or(0))?;
         Ok(SerializeObject {
             ser: self,

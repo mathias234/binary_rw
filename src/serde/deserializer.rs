@@ -1,5 +1,5 @@
 use serde_core::de::{
-    self, Visitor, SeqAccess, DeserializeSeed,
+    self, Visitor, SeqAccess, DeserializeSeed, MapAccess,
 };
 
 use crate::BinaryReader;
@@ -181,7 +181,7 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         V: Visitor<'de>,
     {
         let len = self.reader.read_u32()?;
-        let access = SequenceAccess::new(self, len);
+        let access = SizeAccess::new(self, len);
         visitor.visit_seq(access)
     }
 
@@ -208,7 +208,9 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        todo!()
+        let len = self.reader.read_u32()?;
+        let access = SizeAccess::new(self, len);
+        visitor.visit_map(access)
     }
 
     fn deserialize_struct<V>(
@@ -250,13 +252,13 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     }
 }
 
-struct SequenceAccess<'a, 'de: 'a> {
+struct SizeAccess<'a, 'de: 'a> {
     de: &'a mut Deserializer<'de>,
     size: u32,
     offset: u32,
 }
 
-impl<'a, 'de> SequenceAccess<'a, 'de> {
+impl<'a, 'de> SizeAccess<'a, 'de> {
     fn new(de: &'a mut Deserializer<'de>, size: u32) -> Self {
         Self {
             de,
@@ -266,7 +268,7 @@ impl<'a, 'de> SequenceAccess<'a, 'de> {
     }
 }
 
-impl<'de, 'a> SeqAccess<'de> for SequenceAccess<'a, 'de> {
+impl<'de, 'a> SeqAccess<'de> for SizeAccess<'a, 'de> {
     type Error = Error;
 
     fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>>
@@ -279,5 +281,28 @@ impl<'de, 'a> SeqAccess<'de> for SequenceAccess<'a, 'de> {
         } else {
             Ok(None)
         }
+    }
+}
+
+impl<'de, 'a> MapAccess<'de> for SizeAccess<'a, 'de> {
+    type Error = Error;
+
+    fn next_key_seed<K>(&mut self, seed: K) -> Result<Option<K::Value>>
+    where
+        K: DeserializeSeed<'de>,
+    {
+        if self.offset < self.size {
+            self.offset += 1;
+            seed.deserialize(&mut *self.de).map(Some)
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn next_value_seed<V>(&mut self, seed: V) -> Result<V::Value>
+    where
+        V: DeserializeSeed<'de>,
+    {
+        seed.deserialize(&mut *self.de)
     }
 }

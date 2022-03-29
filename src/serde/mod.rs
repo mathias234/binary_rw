@@ -35,6 +35,7 @@ pub fn from_vec<T>(value: Vec<u8>, endian: Endian) -> Result<T> where
 #[cfg(test)]
 mod tests {
     use anyhow::Result;
+    use std::collections::HashMap;
     use super::*;
 
     #[test]
@@ -195,6 +196,17 @@ mod tests {
         let val = (1u8, String::from("foo"));
         let buffer = to_vec(&val, Default::default())?;
         let res: (u8, String) = from_vec(buffer, Default::default())?;
+        assert_eq!(val, res);
+        Ok(())
+    }
+
+    #[test]
+    fn serde_map() -> Result<()> {
+        let mut val = HashMap::new();
+        val.insert("foo".to_string(), 1u8);
+        val.insert("bar".to_string(), 2u8);
+        let buffer = to_vec(&val, Default::default())?;
+        let res: HashMap<String, u8> = from_vec(buffer, Default::default())?;
         assert_eq!(val, res);
         Ok(())
     }
