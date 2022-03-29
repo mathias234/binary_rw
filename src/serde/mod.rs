@@ -158,9 +158,8 @@ mod tests {
     fn serde_vec() -> Result<()> {
         let val = vec![1u8, 2u8, 3u8];
         let buffer = to_vec(&val, Default::default())?;
-        //println!("{:#?}", buffer);
-        //let res: Vec<u8> = from_vec(buffer, Default::default())?;
-        //assert_eq!(val, res);
+        let res: Vec<u8> = from_vec(buffer, Default::default())?;
+        assert_eq!(val, res);
         Ok(())
     }
 }

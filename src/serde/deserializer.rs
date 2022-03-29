@@ -1,5 +1,5 @@
 use serde_core::de::{
-    self, Visitor,
+    self, Visitor, SeqAccess, DeserializeSeed,
 };
 
 use crate::BinaryReader;
@@ -180,8 +180,9 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
     where
         V: Visitor<'de>,
     {
-        todo!()
-        //visitor.visit_seq(self)
+        let len = self.reader.read_u32()?;
+        let access = SequenceAccess::new(self, len);
+        visitor.visit_seq(access)
     }
 
     fn deserialize_tuple<V>(self, _len: usize, visitor: V) -> Result<V::Value>
@@ -246,5 +247,37 @@ impl<'de, 'a> de::Deserializer<'de> for &'a mut Deserializer<'de> {
         V: Visitor<'de>,
     {
         unimplemented!()
+    }
+}
+
+struct SequenceAccess<'a, 'de: 'a> {
+    de: &'a mut Deserializer<'de>,
+    size: u32,
+    offset: u32,
+}
+
+impl<'a, 'de> SequenceAccess<'a, 'de> {
+    fn new(de: &'a mut Deserializer<'de>, size: u32) -> Self {
+        Self {
+            de,
+            size,
+            offset: 0,
+        }
+    }
+}
+
+impl<'de, 'a> SeqAccess<'de> for SequenceAccess<'a, 'de> {
+    type Error = Error;
+
+    fn next_element_seed<T>(&mut self, seed: T) -> Result<Option<T::Value>>
+    where
+        T: DeserializeSeed<'de>,
+    {
+        if self.offset < self.size {
+            self.offset += 1;
+            seed.deserialize(&mut *self.de).map(Some)
+        } else {
+            Ok(None)
+        }
     }
 }

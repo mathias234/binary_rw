@@ -67,10 +67,10 @@ impl<'a, 'b> ser::SerializeTupleStruct for SerializeArray<'a, 'b> {
 }
 
 #[doc(hidden)]
-pub struct SerializeObject<'a> {
-    ser: &'a mut Serializer<'a>,
+pub struct SerializeObject<'a, 'b> {
+    ser: &'a mut Serializer<'b>,
 }
-impl<'a> ser::SerializeStruct for SerializeObject<'a> {
+impl<'a, 'b> ser::SerializeStruct for SerializeObject<'a, 'b> {
     type Ok = usize;
     type Error = Error;
     fn serialize_field<T: ?Sized>(
@@ -95,7 +95,7 @@ impl<'a> ser::SerializeStruct for SerializeObject<'a> {
     }
 }
 
-impl<'a> ser::SerializeMap for SerializeObject<'a> {
+impl<'a, 'b> ser::SerializeMap for SerializeObject<'a, 'b> {
     type Ok = usize;
     type Error = Error;
 
@@ -103,7 +103,7 @@ impl<'a> ser::SerializeMap for SerializeObject<'a> {
     where
         T: ?Sized + Serialize,
     {
-        //key.serialize(&mut *self.ser)?;
+        key.serialize(&mut *self.ser)?;
         Ok(())
     }
 
@@ -114,7 +114,7 @@ impl<'a> ser::SerializeMap for SerializeObject<'a> {
     where
         T: Serialize,
     {
-        //value.serialize(&mut *self.ser)?;
+        value.serialize(&mut *self.ser)?;
         Ok(())
     }
 
@@ -201,8 +201,8 @@ impl<'a, 'b> ser::Serializer for &'a mut Serializer<'b> {
     type SerializeTuple = SerializeArray<'a, 'b>;
     type SerializeTupleStruct = SerializeArray<'a, 'b>;
     type SerializeTupleVariant = SerializeTupleVariant<'a>;
-    type SerializeMap = SerializeObject<'a>;
-    type SerializeStruct = SerializeObject<'a>;
+    type SerializeMap = SerializeObject<'a, 'b>;
+    type SerializeStruct = SerializeObject<'a, 'b>;
     type SerializeStructVariant = SerializeStructVariant<'a>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok> {
@@ -355,14 +355,10 @@ impl<'a, 'b> ser::Serializer for &'a mut Serializer<'b> {
         self,
         len: Option<usize>,
     ) -> Result<Self::SerializeMap> {
-
-        todo!()
-
-        /*
+        self.writer.write_u32(len.map(|l| l as u32).unwrap_or(0))?;
         Ok(SerializeObject {
             ser: self,
         })
-        */
     }
 
     fn serialize_struct(
