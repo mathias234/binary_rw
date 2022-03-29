@@ -1,5 +1,5 @@
 //! Write a `Serialize` implementation to a binary writer.
-use serde_core::ser::{self, Serialize};
+use serde::ser::{self, Serialize};
 use crate::BinaryWriter;
 use super::{Result, Error};
 
@@ -70,6 +70,7 @@ impl<'a, 'b> ser::SerializeTupleStruct for SerializeArray<'a, 'b> {
 pub struct SerializeObject<'a, 'b> {
     ser: &'a mut Serializer<'b>,
 }
+
 impl<'a, 'b> ser::SerializeStruct for SerializeObject<'a, 'b> {
     type Ok = usize;
     type Error = Error;
@@ -81,7 +82,7 @@ impl<'a, 'b> ser::SerializeStruct for SerializeObject<'a, 'b> {
     where
         T: Serialize,
     {
-        println!("Serializing object ...");
+        self.ser.writer.write_string(key)?;
         value.serialize(&mut *self.ser)?;
         Ok(())
     }
@@ -137,12 +138,7 @@ impl<'a, 'b> ser::SerializeMap for SerializeObject<'a, 'b> {
     }
 }
 
-#[doc(hidden)]
-pub struct SerializeTupleVariant<'a> {
-    ser: &'a mut Serializer<'a>,
-}
-
-impl<'a> ser::SerializeTupleVariant for SerializeTupleVariant<'a> {
+impl<'a, 'b> ser::SerializeTupleVariant for SerializeArray<'a, 'b> {
     type Ok = usize;
     type Error = Error;
 
@@ -153,6 +149,7 @@ impl<'a> ser::SerializeTupleVariant for SerializeTupleVariant<'a> {
     where
         T: Serialize,
     {
+        value.serialize(&mut *self.ser)?;
         Ok(())
     }
 
@@ -161,11 +158,7 @@ impl<'a> ser::SerializeTupleVariant for SerializeTupleVariant<'a> {
     }
 }
 
-#[doc(hidden)]
-pub struct SerializeStructVariant<'a> {
-    ser: &'a mut Serializer<'a>,
-}
-impl<'a> ser::SerializeStructVariant for SerializeStructVariant<'a> {
+impl<'a, 'b> ser::SerializeStructVariant for SerializeObject<'a, 'b> {
     type Ok = usize;
     type Error = Error;
 
@@ -177,6 +170,8 @@ impl<'a> ser::SerializeStructVariant for SerializeStructVariant<'a> {
     where
         T: Serialize,
     {
+        self.ser.writer.write_string(key)?;
+        value.serialize(&mut *self.ser)?;
         Ok(())
     }
 
@@ -202,10 +197,10 @@ impl<'a, 'b> ser::Serializer for &'a mut Serializer<'b> {
     type SerializeSeq = SerializeArray<'a, 'b>;
     type SerializeTuple = SerializeArray<'a, 'b>;
     type SerializeTupleStruct = SerializeArray<'a, 'b>;
-    type SerializeTupleVariant = SerializeTupleVariant<'a>;
+    type SerializeTupleVariant = SerializeArray<'a, 'b>;
     type SerializeMap = SerializeObject<'a, 'b>;
     type SerializeStruct = SerializeObject<'a, 'b>;
-    type SerializeStructVariant = SerializeStructVariant<'a>;
+    type SerializeStructVariant = SerializeObject<'a, 'b>;
 
     fn serialize_bool(self, v: bool) -> Result<Self::Ok> {
         Ok(self.writer.write_bool(v)?)
@@ -294,7 +289,8 @@ impl<'a, 'b> ser::Serializer for &'a mut Serializer<'b> {
         _variant_index: u32,
         variant: &'static str,
     ) -> Result<Self::Ok> {
-        self.serialize_str(variant)
+        self.writer.write_string(variant)?;
+        self.serialize_unit()
     }
 
     fn serialize_newtype_struct<T>(
@@ -318,10 +314,8 @@ impl<'a, 'b> ser::Serializer for &'a mut Serializer<'b> {
     where
         T: ?Sized + Serialize,
     {
-        use ser::SerializeMap;
-        let mut map = self.serialize_map(Some(1))?;
-        map.serialize_entry(variant, value)?;
-        map.end()
+        self.writer.write_string(variant)?;
+        value.serialize(self)
     }
 
     fn serialize_seq(
@@ -343,9 +337,11 @@ impl<'a, 'b> ser::Serializer for &'a mut Serializer<'b> {
 
     fn serialize_tuple_struct(
         self,
-        _name: &'static str,
+        name: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleStruct> {
+        //println!("Serialize a tuple struct!");
+        self.writer.write_string(name)?;
         self.serialize_seq(Some(len))
     }
 
@@ -353,7 +349,6 @@ impl<'a, 'b> ser::Serializer for &'a mut Serializer<'b> {
         self,
         len: Option<usize>,
     ) -> Result<Self::SerializeMap> {
-        println!("Serializing a map...");
         self.writer.write_u32(len.map(|l| l as u32).unwrap_or(0))?;
         Ok(SerializeObject {
             ser: self,
@@ -362,7 +357,7 @@ impl<'a, 'b> ser::Serializer for &'a mut Serializer<'b> {
 
     fn serialize_struct(
         self,
-        _name: &'static str,
+        name: &'static str,
         len: usize,
     ) -> Result<Self::SerializeStruct> {
         self.serialize_map(Some(len))
@@ -375,15 +370,8 @@ impl<'a, 'b> ser::Serializer for &'a mut Serializer<'b> {
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeTupleVariant> {
-        todo!()
-        //use ser::SerializeSeq;
-
-        //let seq = self.serialize_seq(Some(len))?;
-        //let val = seq.end()?;
-
-        //Ok(SerializeTupleVariant {
-            //ser: self,
-        //})
+        self.writer.write_string(variant)?;
+        self.serialize_seq(Some(len))
     }
 
     fn serialize_struct_variant(
@@ -393,14 +381,7 @@ impl<'a, 'b> ser::Serializer for &'a mut Serializer<'b> {
         variant: &'static str,
         len: usize,
     ) -> Result<Self::SerializeStructVariant> {
-        todo!()
-        //use ser::SerializeMap;
-
-        //let map = self.serialize_map(Some(len))?;
-        //let val = map.end()?;
-
-        //Ok(SerializeStructVariant {
-            //ser: self,
-        //})
+        self.writer.write_string(variant)?;
+        self.serialize_struct(variant, len)
     }
 }

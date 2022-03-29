@@ -3,7 +3,7 @@ mod deserializer;
 mod error;
 mod serializer;
 
-use serde_core::{Serialize, de::DeserializeOwned};
+use serde::{Serialize, de::DeserializeOwned, de::Deserialize};
 
 use crate::{Endian, MemoryStream, BinaryWriter, BinaryReader};
 
@@ -28,13 +28,14 @@ pub fn from_vec<T>(value: Vec<u8>, endian: Endian) -> Result<T> where
     let mut stream: MemoryStream = value.into();
     let reader = BinaryReader::new(&mut stream, endian);
     let mut deserializer = Deserializer { reader };
-    let value: T = serde_core::de::Deserialize::deserialize(&mut deserializer)?;
+    let value: T = Deserialize::deserialize(&mut deserializer)?;
     Ok(value)
 }
 
 #[cfg(test)]
 mod tests {
     use anyhow::Result;
+    use serde::{Serialize, Deserialize};
     use std::collections::HashMap;
     use super::*;
 
@@ -207,6 +208,65 @@ mod tests {
         val.insert("bar".to_string(), 2u8);
         let buffer = to_vec(&val, Default::default())?;
         let res: HashMap<String, u8> = from_vec(buffer, Default::default())?;
+        assert_eq!(val, res);
+        Ok(())
+    }
+
+    #[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
+    struct SimpleStruct {
+        x: u32,
+        y: u32,
+    }
+
+    #[test]
+    fn serde_struct() -> Result<()> {
+        let val = SimpleStruct {x: 1, y: 2};
+        let buffer = to_vec(&val, Default::default())?;
+        let res: SimpleStruct = from_vec(buffer, Default::default())?;
+        assert_eq!(val, res);
+        Ok(())
+    }
+
+    #[derive(Serialize, Deserialize, PartialEq, Debug)]
+    enum E {
+        Unit,
+        NewType(u32),
+        Tuple(u32, u32),
+        Struct { a: u32 },
+    }
+
+    #[test]
+    fn serde_enum_unit() -> Result<()> {
+        let val = E::Unit;
+        let buffer = to_vec(&val, Default::default())?;
+        let res: E = from_vec(buffer, Default::default())?;
+        assert_eq!(val, res);
+        Ok(())
+    }
+
+    #[test]
+    fn serde_enum_newtype() -> Result<()> {
+        let val = E::NewType(1);
+        let buffer = to_vec(&val, Default::default())?;
+        let res: E = from_vec(buffer, Default::default())?;
+        assert_eq!(val, res);
+        Ok(())
+    }
+
+    #[test]
+    fn serde_enum_tuple() -> Result<()> {
+        let val = E::Tuple(1, 2);
+        let buffer = to_vec(&val, Default::default())?;
+        let res: E = from_vec(buffer, Default::default())?;
+        assert_eq!(val, res);
+        Ok(())
+    }
+
+    #[test]
+    fn serde_enum_struct() -> Result<()> {
+        let val = E::Struct {a: 1};
+        let buffer = to_vec(&val, Default::default())?;
+        let res: E = from_vec(buffer, Default::default())?;
         assert_eq!(val, res);
         Ok(())
     }

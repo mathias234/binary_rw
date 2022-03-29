@@ -13,14 +13,14 @@ pub enum Error {
     Binary(#[from] crate::BinaryError),
 }
 
-impl serde_core::ser::Error for Error {
+impl serde::ser::Error for Error {
     #[cold]
     fn custom<T: fmt::Display>(msg: T) -> Self {
         Self::Message(msg.to_string())
     }
 }
 
-impl serde_core::de::Error for Error {
+impl serde::de::Error for Error {
     #[cold]
     fn custom<T: fmt::Display>(msg: T) -> Self {
         Self::Message(msg.to_string())
