@@ -38,6 +38,15 @@ mod tests {
     use super::*;
 
     #[test]
+    fn serde_unit() -> Result<()> {
+        let val = ();
+        let buffer = to_vec(&val, Default::default())?;
+        let res: () = from_vec(buffer, Default::default())?;
+        assert_eq!(val, res);
+        Ok(())
+    }
+
+    #[test]
     fn serde_string() -> Result<()> {
         let val = String::from("foo");
         let buffer = to_vec(&val, Default::default())?;
