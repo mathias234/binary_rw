@@ -37,6 +37,10 @@ impl Stream for FileStream {
     fn tell(&mut self) -> Result<usize> {
         Ok(self.file.seek(SeekFrom::Current(0))? as usize)
     }
+
+    fn len(&self) -> Result<usize> {
+        Ok(self.file.metadata()?.len().try_into()?)
+    }
 }
 
 impl Read for FileStream {

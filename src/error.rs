@@ -9,6 +9,9 @@ pub enum BinaryError {
     /// Error generated trying to read the char type.
     #[error("invalid character read from stream")]
     InvalidChar,
+    /// Error generated converting between integers.
+    #[error(transparent)]
+    TryFromInt(#[from] std::num::TryFromIntError),
     /// Error generated converting to UTF-8.
     #[error(transparent)]
     Utf8Error(#[from] std::string::FromUtf8Error),
