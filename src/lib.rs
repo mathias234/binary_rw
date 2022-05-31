@@ -60,6 +60,8 @@ pub trait Stream: Read + Write {
     fn seek(&mut self, to: usize) -> Result<usize>;
     /// Get the current position.
     fn tell(&mut self) -> Result<usize>;
+    /// Get the length of the stream.
+    fn len(&self) -> Result<usize>;
 }
 
 /// Read from a stream.

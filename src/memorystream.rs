@@ -27,6 +27,10 @@ impl Stream for MemoryStream {
     fn tell(&mut self) -> Result<usize> {
         Ok(self.position)
     }
+
+    fn len(&self) -> Result<usize> {
+        Ok(self.buffer.len())
+    }
 }
 
 impl Read for MemoryStream {
