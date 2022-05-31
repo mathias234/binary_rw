@@ -1,6 +1,6 @@
 //! Stream for operating on files.
 use crate::{Stream, Result, BinaryError};
-use std::fs;
+use std::fs::{self, OpenOptions};
 use std::io::prelude::*;
 use std::io::{Error, ErrorKind, Read, SeekFrom, Write};
 use std::path::Path;
@@ -8,7 +8,13 @@ use std::path::Path;
 /// Indicates how the file stream should open the underlying file.
 pub enum OpenType {
     /// Open and create the file if it does not exist.
+    ///
+    /// This will truncate the file if it already exists.
     OpenAndCreate,
+
+    /// Open the file for reading and writing.
+    ReadWrite,
+
     /// Open the file for reading.
     Open,
 }
@@ -23,6 +29,10 @@ impl FileStream {
     pub fn new<P: AsRef<Path>>(path: P, open_type: OpenType) -> Result<FileStream> {
         let file = match open_type {
             OpenType::OpenAndCreate => fs::File::create(path)?,
+            OpenType::ReadWrite => OpenOptions::new()
+                .read(true)
+                .write(true)
+                .open(path)?,
             OpenType::Open => fs::File::open(path)?,
         };
         Ok(FileStream { file })
