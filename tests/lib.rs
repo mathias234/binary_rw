@@ -1,5 +1,5 @@
 use anyhow::Result;
-use binary_rw::{BinaryReader, BinaryWriter, FileStream, MemoryStream, OpenType};
+use binary_rw::{Endian, BinaryReader, BinaryWriter, FileStream, MemoryStream, OpenType, SliceStream};
 
 fn create_writer_stream(name: &str) -> FileStream {
     let name = format!("{}.test", name);
@@ -14,6 +14,27 @@ fn create_reader_stream(name: &str) -> FileStream {
 fn cleanup(name: &str) {
     let name = format!("{}.test", name);
     std::fs::remove_file(&name).expect("Failure to delete file");
+}
+
+#[test]
+fn slice_test() -> Result<()> {
+    let mut stream = MemoryStream::new();
+    let mut writer = BinaryWriter::new(&mut stream, Endian::Big);
+    writer.write_u32(42)?;
+    writer.write_string("foo")?;
+
+    let buffer: Vec<u8> = stream.into();
+
+    let mut stream = SliceStream::new(&buffer);
+    let mut reader = BinaryReader::new(&mut stream, Endian::Big);
+
+    let value = reader.read_u32()?;
+    assert_eq!(42, value);
+
+    let value = reader.read_string()?;
+    assert_eq!("foo", &value);
+
+    Ok(())
 }
 
 #[test]
