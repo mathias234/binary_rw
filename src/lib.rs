@@ -55,7 +55,7 @@ impl Default for Endian {
 }
 
 /// Trait for streams that can seek.
-pub trait SeekableStream {
+pub trait SeekStream {
     /// Seek to a position.
     fn seek(&mut self, to: usize) -> Result<usize>;
     /// Get the current position.
@@ -65,10 +65,10 @@ pub trait SeekableStream {
 }
 
 /// Trait for a readable stream.
-pub trait ReadStream: Read + SeekableStream {}
+pub trait ReadStream: Read + SeekStream {}
 
 /// Trait for a writable stream.
-pub trait WriteStream: Write + SeekableStream {}
+pub trait WriteStream: Write + SeekStream {}
 
 /// Read from a stream.
 pub struct BinaryReader<'a> {

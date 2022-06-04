@@ -1,5 +1,5 @@
 //! Stream that reads from and writes to an owned buffer.
-use crate::{BinaryError, SeekableStream, ReadStream, Result, WriteStream};
+use crate::{BinaryError, SeekStream, ReadStream, Result, WriteStream};
 use std::io::{Error, ErrorKind, Read, Write};
 
 /// Stream that wraps an owned buffer.
@@ -18,7 +18,7 @@ impl MemoryStream {
     }
 }
 
-impl SeekableStream for MemoryStream {
+impl SeekStream for MemoryStream {
     fn seek(&mut self, to: usize) -> Result<usize> {
         self.position = to;
         Ok(self.position)
