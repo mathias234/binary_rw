@@ -22,6 +22,7 @@ fn slice_test() -> Result<()> {
     let mut writer = BinaryWriter::new(&mut stream, Endian::Big);
     writer.write_u32(42)?;
     writer.write_string("foo")?;
+    writer.write_char('b')?;
 
     let buffer: Vec<u8> = stream.into();
 
@@ -37,7 +38,10 @@ fn slice_test() -> Result<()> {
     let value = reader.read_string()?;
     assert_eq!("foo", &value);
 
-    assert_eq!(15, reader.len()?);
+    let value = reader.read_char()?;
+    assert_eq!('b', value);
+
+    assert_eq!(19, reader.len()?);
 
     Ok(())
 }
