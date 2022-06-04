@@ -1,5 +1,5 @@
 //! Stream that reads from a slice of bytes.
-use crate::{BinaryError, SeekStream, ReadStream, Result};
+use crate::{BinaryError, ReadStream, Result, SeekStream};
 use std::io::{Error, ErrorKind, Read};
 
 /// Stream that wraps a slice of bytes.

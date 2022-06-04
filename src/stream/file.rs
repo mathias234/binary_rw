@@ -1,5 +1,5 @@
 //! Stream for operating on files.
-use crate::{BinaryError, SeekStream, ReadStream, Result, WriteStream};
+use crate::{BinaryError, ReadStream, Result, SeekStream, WriteStream};
 use std::fs::{self, OpenOptions};
 use std::io::prelude::*;
 use std::io::{Error, ErrorKind, Read, SeekFrom, Write};
@@ -74,4 +74,3 @@ impl Write for FileStream {
 
 impl ReadStream for FileStream {}
 impl WriteStream for FileStream {}
-

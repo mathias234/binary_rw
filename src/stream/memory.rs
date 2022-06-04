@@ -1,5 +1,5 @@
 //! Stream that reads from and writes to an owned buffer.
-use crate::{BinaryError, SeekStream, ReadStream, Result, WriteStream};
+use crate::{BinaryError, ReadStream, Result, SeekStream, WriteStream};
 use std::io::{Error, ErrorKind, Read, Write};
 
 /// Stream that wraps an owned buffer.
@@ -98,4 +98,3 @@ impl Into<Vec<u8>> for MemoryStream {
 
 impl ReadStream for MemoryStream {}
 impl WriteStream for MemoryStream {}
-
