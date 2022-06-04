@@ -115,6 +115,8 @@ fn slice_test() -> Result<()> {
     writer.write_string("foo")?;
     writer.write_char('b')?;
 
+    assert_eq!(19, writer.len()?);
+
     let buffer: Vec<u8> = stream.into();
 
     let mut stream = SliceStream::new(&buffer);
