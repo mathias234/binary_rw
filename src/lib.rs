@@ -10,12 +10,12 @@
 use std::io::{Read, Write};
 
 mod error;
-mod filestream;
-mod memorystream;
+mod stream;
 
 pub use error::BinaryError;
-pub use filestream::{FileStream, OpenType};
-pub use memorystream::MemoryStream;
+pub use stream::file::{FileStream, OpenType};
+pub use stream::memory::MemoryStream;
+pub use stream::slice::SliceStream;
 
 /// Result type for binary errors.
 pub type Result<T> = std::result::Result<T, BinaryError>;
@@ -54,8 +54,8 @@ impl Default for Endian {
     }
 }
 
-/// Trait for underlying readable and writable stream.
-pub trait Stream: Read + Write {
+/// Trait for streams that can seek.
+pub trait SeekableStream {
     /// Seek to a position.
     fn seek(&mut self, to: usize) -> Result<usize>;
     /// Get the current position.
@@ -64,15 +64,21 @@ pub trait Stream: Read + Write {
     fn len(&self) -> Result<usize>;
 }
 
+/// Trait for a readable stream.
+pub trait ReadStream: Read + SeekableStream {}
+
+/// Trait for a writable stream.
+pub trait WriteStream: Write + SeekableStream {}
+
 /// Read from a stream.
 pub struct BinaryReader<'a> {
-    stream: &'a mut dyn Stream,
+    stream: &'a mut dyn ReadStream,
     endian: Endian,
 }
 
 impl<'a> BinaryReader<'a> {
     /// Create a binary reader with the given endianness.
-    pub fn new(stream: &'a mut impl Stream, endian: Endian) -> Self {
+    pub fn new(stream: &'a mut impl ReadStream, endian: Endian) -> Self {
         Self { stream, endian }
     }
 
@@ -225,13 +231,13 @@ impl<'a> BinaryReader<'a> {
 
 /// Write to a stream.
 pub struct BinaryWriter<'a> {
-    stream: &'a mut dyn Stream,
+    stream: &'a mut dyn WriteStream,
     endian: Endian,
 }
 
 impl<'a> BinaryWriter<'a> {
     /// Create a binary writer with the given endianness.
-    pub fn new(stream: &'a mut impl Stream, endian: Endian) -> Self {
+    pub fn new(stream: &'a mut impl WriteStream, endian: Endian) -> Self {
         Self { stream, endian }
     }
 

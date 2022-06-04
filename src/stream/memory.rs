@@ -1,8 +1,8 @@
-//! Stream for operating on in-memory buffers.
-use crate::{Stream, BinaryError, Result};
+//! Stream that reads from and writes to an owned buffer.
+use crate::{BinaryError, SeekableStream, ReadStream, Result, WriteStream};
 use std::io::{Error, ErrorKind, Read, Write};
 
-/// Stream that wraps an in-memory buffer.
+/// Stream that wraps an owned buffer.
 pub struct MemoryStream {
     buffer: Vec<u8>,
     position: usize,
@@ -11,14 +11,14 @@ pub struct MemoryStream {
 impl MemoryStream {
     /// Create a memory stream.
     pub fn new() -> Self {
-        MemoryStream {
+        Self {
             buffer: Vec::new(),
             position: 0,
         }
     }
 }
 
-impl Stream for MemoryStream {
+impl SeekableStream for MemoryStream {
     fn seek(&mut self, to: usize) -> Result<usize> {
         self.position = to;
         Ok(self.position)
@@ -95,3 +95,7 @@ impl Into<Vec<u8>> for MemoryStream {
         self.buffer
     }
 }
+
+impl ReadStream for MemoryStream {}
+impl WriteStream for MemoryStream {}
+
