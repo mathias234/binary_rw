@@ -1,5 +1,5 @@
 use anyhow::Result;
-use binary_rw::{Endian, BinaryReader, BinaryWriter, FileStream, MemoryStream, OpenType, SliceStream};
+use binary_rw::{Endian, BinaryReader, BinaryWriter, FileStream, MemoryStream, OpenType, SliceStream, SeekStream};
 
 fn create_writer_stream(name: &str) -> FileStream {
     let name = format!("{}.test", name);

@@ -76,20 +76,24 @@ pub struct BinaryReader<'a> {
     endian: Endian,
 }
 
+impl<'a> SeekStream for BinaryReader<'a> {
+    fn seek(&mut self, to: usize) -> Result<usize> {
+        self.stream.seek(to)
+    }
+
+    fn tell(&mut self) -> Result<usize> {
+        self.stream.tell()
+    }
+
+    fn len(&self) -> Result<usize> {
+        self.stream.len()
+    }
+}
+
 impl<'a> BinaryReader<'a> {
     /// Create a binary reader with the given endianness.
     pub fn new(stream: &'a mut impl ReadStream, endian: Endian) -> Self {
         Self { stream, endian }
-    }
-
-    /// Seek to a position.
-    pub fn seek(&mut self, to: usize) -> Result<usize> {
-        Ok(self.stream.seek(to)?)
-    }
-
-    /// Get the current position.
-    pub fn tell(&mut self) -> Result<usize> {
-        Ok(self.stream.tell()?)
     }
 
     /// Read a length-prefixed `String` from the stream.
@@ -235,20 +239,24 @@ pub struct BinaryWriter<'a> {
     endian: Endian,
 }
 
+impl<'a> SeekStream for BinaryWriter<'a> {
+    fn seek(&mut self, to: usize) -> Result<usize> {
+        self.stream.seek(to)
+    }
+
+    fn tell(&mut self) -> Result<usize> {
+        self.stream.tell()
+    }
+
+    fn len(&self) -> Result<usize> {
+        self.stream.len()
+    }
+}
+
 impl<'a> BinaryWriter<'a> {
     /// Create a binary writer with the given endianness.
     pub fn new(stream: &'a mut impl WriteStream, endian: Endian) -> Self {
         Self { stream, endian }
-    }
-
-    /// Seek to a position.
-    pub fn seek(&mut self, to: usize) -> Result<usize> {
-        Ok(self.stream.seek(to)?)
-    }
-
-    /// Get the current position.
-    pub fn tell(&mut self) -> Result<usize> {
-        Ok(self.stream.tell()?)
     }
 
     /// Write a length-prefixed `String` to the stream.
