@@ -28,11 +28,16 @@ fn slice_test() -> Result<()> {
     let mut stream = SliceStream::new(&buffer);
     let mut reader = BinaryReader::new(&mut stream, Endian::Big);
 
+    reader.seek(0)?;
     let value = reader.read_u32()?;
     assert_eq!(42, value);
 
+    assert_eq!(4, reader.tell()?);
+
     let value = reader.read_string()?;
     assert_eq!("foo", &value);
+
+    assert_eq!(15, reader.len()?);
 
     Ok(())
 }
