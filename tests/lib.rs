@@ -1,5 +1,7 @@
 use anyhow::Result;
-use binary_rw::{BinaryReader, BinaryWriter, FileStream, MemoryStream, OpenType};
+use binary_rw::{
+    BinaryReader, BinaryWriter, Endian, FileStream, MemoryStream, OpenType, SeekStream, SliceStream,
+};
 
 fn create_writer_stream(name: &str) -> FileStream {
     let name = format!("{}.test", name);
@@ -14,6 +16,127 @@ fn create_reader_stream(name: &str) -> FileStream {
 fn cleanup(name: &str) {
     let name = format!("{}.test", name);
     std::fs::remove_file(&name).expect("Failure to delete file");
+}
+
+#[test]
+fn borrow_test() -> Result<()> {
+    let mut stream = MemoryStream::new();
+    let mut writer = BinaryWriter::new(&mut stream, Endian::Big);
+    writer.write_u8(8)?;
+    writer.write_u8(&8)?;
+    writer.write_i8(-8)?;
+    writer.write_i8(&-8)?;
+
+    writer.write_u16(16)?;
+    writer.write_u16(&16)?;
+    writer.write_i16(-16)?;
+    writer.write_i16(&-16)?;
+
+    writer.write_u32(32)?;
+    writer.write_u32(&32)?;
+    writer.write_i32(-32)?;
+    writer.write_i32(&-32)?;
+
+    writer.write_u64(64)?;
+    writer.write_u64(&64)?;
+    writer.write_i64(-64)?;
+    writer.write_i64(&-64)?;
+
+    writer.write_usize(64)?;
+    writer.write_usize(&64)?;
+    writer.write_isize(-64)?;
+    writer.write_isize(&-64)?;
+
+    writer.write_char('c')?;
+    writer.write_char(&'c')?;
+
+    writer.write_bool(true)?;
+    writer.write_bool(&true)?;
+
+    writer.write_string("foo")?;
+    writer.write_string(String::from("foo"))?;
+
+    let buf: Vec<u8> = vec![1, 2, 3, 4];
+    let exp: Vec<u8> = buf.clone(); // for assertion
+
+    writer.write_bytes(&buf)?;
+    writer.write_bytes(buf)?;
+
+    let buffer: Vec<u8> = stream.into();
+
+    let mut stream = SliceStream::new(&buffer);
+    let mut reader = BinaryReader::new(&mut stream, Endian::Big);
+
+    let value = (reader.read_u8()?, reader.read_u8()?);
+    assert_eq!((8, 8), value);
+    let value = (reader.read_i8()?, reader.read_i8()?);
+    assert_eq!((-8, -8), value);
+
+    let value = (reader.read_u16()?, reader.read_u16()?);
+    assert_eq!((16, 16), value);
+    let value = (reader.read_i16()?, reader.read_i16()?);
+    assert_eq!((-16, -16), value);
+
+    let value = (reader.read_u32()?, reader.read_u32()?);
+    assert_eq!((32, 32), value);
+    let value = (reader.read_i32()?, reader.read_i32()?);
+    assert_eq!((-32, -32), value);
+
+    let value = (reader.read_u64()?, reader.read_u64()?);
+    assert_eq!((64, 64), value);
+    let value = (reader.read_i64()?, reader.read_i64()?);
+    assert_eq!((-64, -64), value);
+
+    let value = (reader.read_usize()?, reader.read_usize()?);
+    assert_eq!((64, 64), value);
+    let value = (reader.read_isize()?, reader.read_isize()?);
+    assert_eq!((-64, -64), value);
+
+    let value = (reader.read_char()?, reader.read_char()?);
+    assert_eq!(('c', 'c'), value);
+
+    let value = (reader.read_bool()?, reader.read_bool()?);
+    assert_eq!((true, true), value);
+
+    let value = (reader.read_string()?, reader.read_string()?);
+    assert_eq!((String::from("foo"), String::from("foo")), value);
+
+    let value = (reader.read_bytes(4)?, reader.read_bytes(4)?);
+    assert_eq!((exp.clone(), exp), value);
+
+    Ok(())
+}
+
+#[test]
+fn slice_test() -> Result<()> {
+    let mut stream = MemoryStream::new();
+    let mut writer = BinaryWriter::new(&mut stream, Endian::Big);
+    writer.write_u32(42)?;
+    writer.write_string("foo")?;
+    writer.write_char('b')?;
+
+    assert_eq!(19, writer.len()?);
+
+    let buffer: Vec<u8> = stream.into();
+
+    let mut stream = SliceStream::new(&buffer);
+    let mut reader = BinaryReader::new(&mut stream, Endian::Big);
+
+    reader.seek(0)?;
+    let value = reader.read_u32()?;
+    assert_eq!(42, value);
+
+    assert_eq!(4, reader.tell()?);
+
+    let value = reader.read_string()?;
+    assert_eq!("foo", &value);
+
+    let value = reader.read_char()?;
+    assert_eq!('b', value);
+
+    assert_eq!(19, reader.len()?);
+
+    Ok(())
 }
 
 #[test]
