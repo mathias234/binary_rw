@@ -1,6 +1,6 @@
 //! Stream for operating on files.
 use crate::{BinaryError, ReadStream, Result, SeekStream, WriteStream};
-use std::fs::{self, OpenOptions};
+use std::fs::{File, OpenOptions};
 use std::io::prelude::*;
 use std::io::{Error, ErrorKind, Read, SeekFrom, Write};
 use std::path::Path;
@@ -21,16 +21,16 @@ pub enum OpenType {
 
 /// Stream that wraps a file.
 pub struct FileStream {
-    file: fs::File,
+    file: File,
 }
 
 impl FileStream {
     /// Create a file stream.
     pub fn new<P: AsRef<Path>>(path: P, open_type: OpenType) -> Result<FileStream> {
         let file = match open_type {
-            OpenType::OpenAndCreate => fs::File::create(path)?,
+            OpenType::OpenAndCreate => File::create(path)?,
             OpenType::ReadWrite => OpenOptions::new().read(true).write(true).open(path)?,
-            OpenType::Open => fs::File::open(path)?,
+            OpenType::Open => File::open(path)?,
         };
         Ok(Self { file })
     }
@@ -74,3 +74,9 @@ impl Write for FileStream {
 
 impl ReadStream for FileStream {}
 impl WriteStream for FileStream {}
+
+impl From<File> for FileStream {
+    fn from(file: File) -> Self {
+        Self { file }
+    }
+}
