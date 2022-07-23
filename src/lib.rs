@@ -16,7 +16,7 @@ mod error;
 mod stream;
 
 pub use error::BinaryError;
-pub use stream::file::{FileStream, OpenType};
+pub use stream::file::FileStream;
 pub use stream::memory::MemoryStream;
 pub use stream::slice::SliceStream;
 
