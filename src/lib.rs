@@ -44,6 +44,7 @@ macro_rules! decode {
 }
 
 /// Variants to describe endianness.
+#[derive(PartialEq)]
 pub enum Endian {
     /// Big endian.
     Big,
@@ -113,6 +114,15 @@ impl<'a> BinaryReader<'a> {
             chars
         };
         Ok(String::from_utf8(chars)?)
+    }
+
+    /// Swap endianness to allow for reversing the reading mid stream
+    pub fn swap_endianness(&mut self) {
+        if self.endian == Endian::Big {
+            self.endian = Endian::Little;
+        } else {
+            self.endian = Endian::Big;
+        }
     }
 
     /// Read a character from the stream.

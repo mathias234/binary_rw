@@ -534,6 +534,27 @@ fn write_to_memorystream_into_vec() -> Result<()> {
 }
 
 #[test]
+fn swap_endianness_swaps() -> Result<()> {
+    let mut stream = MemoryStream::new();
+    {
+        let mut writer = BinaryWriter::new(&mut stream, Endian::Big);
+        writer.write_i32(1)?;
+    }
+    stream.seek(0)?;
+    let mut reader: BinaryReader = BinaryReader::new(&mut stream, Endian::Little);
+
+    assert_ne!(1, reader.read_i32()?);
+
+    reader.seek(0)?;
+
+    reader.swap_endianness();
+
+    assert_eq!(1, reader.read_i32()?);
+
+    Ok(())
+}
+
+#[test]
 fn write_to_filestream_overlapping() -> Result<()> {
     let mut stream = create_writer_stream("filestream_overlapping");
     let mut writer = BinaryWriter::new(&mut stream, Default::default());

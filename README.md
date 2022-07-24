@@ -27,8 +27,8 @@ fn main() {
 
 Example code for writing
 ```rust
-extern crate binary_rw;
-use binary_rw::{
+extern crate binary_rs;
+use binary_rs::{
     filestream::{Filestream, OpenType},
     BinaryReader
 };
