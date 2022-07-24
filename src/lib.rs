@@ -369,6 +369,15 @@ impl<'a> BinaryWriter<'a> {
         buff.resize(count, fill_value);
         Ok(self.write_bytes(buff)?)
     }
+
+    /// Swap endianness to allow for reversing the writing mid stream
+    pub fn swap_endianness(&mut self) {
+        if self.endian == Endian::Big {
+            self.endian = Endian::Little;
+        } else {
+            self.endian = Endian::Big;
+        }
+    }
 }
 
 /// Trait for encoding to binary.
