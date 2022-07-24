@@ -44,7 +44,6 @@ macro_rules! decode {
 }
 
 /// Variants to describe endianness.
-#[derive(PartialEq)]
 pub enum Endian {
     /// Big endian.
     Big,
@@ -227,108 +226,6 @@ impl<'a> BinaryReader<'a> {
         let mut buffer: [u8; 1] = [0; 1];
         self.stream.read(&mut buffer)?;
         decode!(self.endian, buffer, i8);
-    }
-
-    /// Read a `f32` from the stream.
-    pub fn read_f32_rev(&mut self) -> Result<f32> {
-        let mut buffer: [u8; 4] = [0; 4];
-        self.stream.read(&mut buffer)?;
-        decode!(if self.endian == Endian::Little { Endian::Big } else { Endian::Little }, buffer, f32);
-    }
-
-    /// Read a `f64` from the stream.
-    pub fn read_f64_rev(&mut self) -> Result<f64> {
-        let mut buffer: [u8; 8] = [0; 8];
-        self.stream.read(&mut buffer)?;
-        decode!(if self.endian == Endian::Little { Endian::Big } else { Endian::Little }, buffer, f64);
-    }
-
-    /// Read an `isize` from the stream.
-    #[cfg(target_arch = "wasm32")]
-    pub fn read_isize_rev(&mut self) -> Result<isize> {
-        let mut buffer: [u8; 4] = [0; 4];
-        self.stream.read(&mut buffer)?;
-        decode!(if self.endian == Endian::Little { Endian::Big } else { Endian::Little }, buffer, isize);
-    }
-
-    /// Read an `isize` from the stream.
-    #[cfg(not(target_arch = "wasm32"))]
-    pub fn read_isize_rev(&mut self) -> Result<isize> {
-        let mut buffer: [u8; 8] = [0; 8];
-        self.stream.read(&mut buffer)?;
-        decode!(if self.endian == Endian::Little { Endian::Big } else { Endian::Little }, buffer, isize);
-    }
-
-    /// Read a `usize` from the stream.
-    #[cfg(target_arch = "wasm32")]
-    pub fn read_usize_rev(&mut self) -> Result<usize> {
-        let mut buffer: [u8; 4] = [0; 4];
-        self.stream.read(&mut buffer)?;
-        decode!(if self.endian == Endian::Little { Endian::Big } else { Endian::Little }, buffer, usize);
-    }
-
-    /// Read a `usize` from the stream.
-    #[cfg(not(target_arch = "wasm32"))]
-    pub fn read_usize_rev(&mut self) -> Result<usize> {
-        let mut buffer: [u8; 8] = [0; 8];
-        self.stream.read(&mut buffer)?;
-        decode!(if self.endian == Endian::Little { Endian::Big } else { Endian::Little }, buffer, usize);
-    }
-
-    /// Read a `u64` from the stream.
-    pub fn read_u64_rev(&mut self) -> Result<u64> {
-        let mut buffer: [u8; 8] = [0; 8];
-        self.stream.read(&mut buffer)?;
-        decode!(if self.endian == Endian::Little { Endian::Big } else { Endian::Little }, buffer, u64);
-    }
-
-    /// Read an `i64` from the stream.
-    pub fn read_i64_rev(&mut self) -> Result<i64> {
-        let mut buffer: [u8; 8] = [0; 8];
-        self.stream.read(&mut buffer)?;
-        decode!(if self.endian == Endian::Little { Endian::Big } else { Endian::Little }, buffer, i64);
-    }
-
-    /// Read a `u32` from the stream.
-    pub fn read_u32_rev(&mut self) -> Result<u32> {
-        let mut buffer: [u8; 4] = [0; 4];
-        self.stream.read(&mut buffer)?;
-        decode!(if self.endian == Endian::Little { Endian::Big } else { Endian::Little }, buffer, u32);
-    }
-
-    /// Read an `i32` from the stream.
-    pub fn read_i32_rev(&mut self) -> Result<i32> {
-        let mut buffer: [u8; 4] = [0; 4];
-        self.stream.read(&mut buffer)?;
-        decode!(if self.endian == Endian::Little { Endian::Big } else { Endian::Little }, buffer, i32);
-    }
-
-    /// Read a `u16` from the stream.
-    pub fn read_u16_rev(&mut self) -> Result<u16> {
-        let mut buffer: [u8; 2] = [0; 2];
-        self.stream.read(&mut buffer)?;
-        decode!(if self.endian == Endian::Little { Endian::Big } else { Endian::Little }, buffer, u16);
-    }
-
-    /// Read an `i16` from the stream.
-    pub fn read_i16_rev(&mut self) -> Result<i16> {
-        let mut buffer: [u8; 2] = [0; 2];
-        self.stream.read(&mut buffer)?;
-        decode!(if self.endian == Endian::Little { Endian::Big } else { Endian::Little }, buffer, i16);
-    }
-
-    /// Read a `u8` from the stream.
-    pub fn read_u8_rev(&mut self) -> Result<u8> {
-        let mut buffer: [u8; 1] = [0; 1];
-        self.stream.read(&mut buffer)?;
-        decode!(if self.endian == Endian::Little { Endian::Big } else { Endian::Little }, buffer, u8);
-    }
-
-    /// Read an `i8` from the stream.
-    pub fn read_i8_rev(&mut self) -> Result<i8> {
-        let mut buffer: [u8; 1] = [0; 1];
-        self.stream.read(&mut buffer)?;
-        decode!(if self.endian == Endian::Little { Endian::Big } else { Endian::Little }, buffer, i8);
     }
 
     /// Read bytes from the stream into a buffer.
