@@ -10,8 +10,8 @@ A binary reader/writer for the rust language, with a similar syntax to the C# Bi
 Example code for reading
 
 ```rust
-extern crate binary_rs;
-use binary_rs::{
+extern crate binary_rw;
+use binary_rw::{
     filestream::{Filestream, OpenType},
     BinaryReader
 };
