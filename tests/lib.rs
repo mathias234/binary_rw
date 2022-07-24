@@ -534,6 +534,16 @@ fn write_to_memorystream_into_vec() -> Result<()> {
 }
 
 #[test]
+fn write_bytes_with_value() -> Result<()> {
+    let mut stream = MemoryStream::new();
+    let mut writer = BinaryWriter::new(&mut stream, Default::default());
+    writer.write_bytes_with_value(3, 1)?;
+    
+    assert_eq!(3, writer.len()?);
+    Ok(())
+}
+
+#[test]
 fn swap_endianness_swaps() -> Result<()> {
     let mut stream = MemoryStream::new();
     {

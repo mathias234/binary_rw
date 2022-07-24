@@ -362,6 +362,13 @@ impl<'a> BinaryWriter<'a> {
     pub fn write_bytes<B: AsRef<[u8]>>(&mut self, data: B) -> Result<usize> {
         Ok(self.stream.write(data.as_ref())?)
     }
+
+    /// Write a byte buffer to the stream.
+    pub fn write_bytes_with_value(&mut self, count: usize, fill_value: u8) -> Result<usize> {
+        let mut buff = Vec::with_capacity(count) as Vec<u8>;
+        buff.resize(count, fill_value);
+        Ok(self.write_bytes(buff)?)
+    }
 }
 
 /// Trait for encoding to binary.
