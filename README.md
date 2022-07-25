@@ -1,4 +1,4 @@
-# binary-rs
+# binary_rw
 [![Crate](https://img.shields.io/crates/v/binary_rw)](https://crates.io/crates/binary_rw)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/mathias234/binary-rs/Code%20coverage%20with%20grcov?label=tests)](https://github.com/mathias234/binary-rs/actions/workflows/rust.yml)
 [![Coverage Status](https://coveralls.io/repos/github/mathias234/binary-rs/badge.svg?branch=master)](https://coveralls.io/github/mathias234/binary-rs?branch=master)

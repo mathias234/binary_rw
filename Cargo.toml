@@ -1,11 +1,11 @@
 [package]
 name = "binary_rw"
-version = "4.0.3"
+version = "4.0.4"
 authors = ["Mathias Danielsen <mathiasda98@hotmail.com>"]
 edition = "2021"
 
 description = "A binary reader/writer library for rust"
-repository = "https://github.com/mathias234/binary-rs"
+repository = "https://github.com/mathias234/binary_rw"
 readme = "README.md"
 keywords = ["binary", "reader", "writer"]
 license = "MIT"
