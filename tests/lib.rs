@@ -113,9 +113,10 @@ fn slice_test() -> Result<()> {
     let mut writer = BinaryWriter::new(&mut stream, Endian::Big);
     writer.write_u32(42)?;
     writer.write_string("foo")?;
+    writer.write_7bit_encoded_len_string("bar")?;
     writer.write_char('b')?;
 
-    assert_eq!(19, writer.len()?);
+    assert_eq!(23, writer.len()?);
 
     let buffer: Vec<u8> = stream.into();
 
@@ -131,10 +132,13 @@ fn slice_test() -> Result<()> {
     let value = reader.read_string()?;
     assert_eq!("foo", &value);
 
+    let value = reader.read_7bit_encoded_len_string()?;
+    assert_eq!("bar", &value);
+
     let value = reader.read_char()?;
     assert_eq!('b', value);
 
-    assert_eq!(19, reader.len()?);
+    assert_eq!(23, reader.len()?);
 
     Ok(())
 }
@@ -403,6 +407,75 @@ fn read_write_test_u8() -> Result<()> {
 }
 
 #[test]
+fn read_write_test_7bit_encoded_i32() -> Result<()> {
+    let values: [(i32, usize); 6] = [(-2147483647, 5), (-100, 5), (50, 1), (270, 2), (70000, 3), (2147483647, 5)];
+
+    for (temp, size_expected) in values {
+        let mut stream = create_writer_stream("7bit_encoded_i32");
+        let mut writer = BinaryWriter::new(&mut stream, Default::default());
+
+        let size = writer.write_7bit_encoded_i32(temp)?;
+        assert_eq!(size_expected, size);
+
+        let mut stream = create_reader_stream("7bit_encoded_i32");
+        let mut reader = BinaryReader::new(&mut stream, Default::default());
+
+        let read_temp = reader.read_7bit_encoded_i32()?;
+
+        assert_eq!(temp, read_temp);
+
+        cleanup("7bit_encoded_i32");
+    }
+    Ok(())
+}
+
+#[test]
+fn read_write_test_7bit_encoded_u32() -> Result<()> {
+    let values: [(u32, usize); 4] = [(50, 1), (270, 2), (70000, 3), (2147483647, 5)];
+
+    for (temp, size_expected) in values {
+        let mut stream = create_writer_stream("7bit_encoded_u32");
+        let mut writer = BinaryWriter::new(&mut stream, Default::default());
+
+        let size = writer.write_7bit_encoded_u32(temp)?;
+        assert_eq!(size_expected, size);
+
+        let mut stream = create_reader_stream("7bit_encoded_u32");
+        let mut reader = BinaryReader::new(&mut stream, Default::default());
+
+        let read_temp = reader.read_7bit_encoded_u32()?;
+
+        assert_eq!(temp, read_temp);
+
+        cleanup("7bit_encoded_u32");
+    }
+    Ok(())
+}
+
+#[test]
+fn read_write_test_7bit_encoded_usize() -> Result<()> {
+    let values: [(usize, usize); 4] = [(50, 1), (270, 2), (70000, 3), (2147483647, 5)];
+
+    for (temp, size_expected) in values {
+        let mut stream = create_writer_stream("7bit_encoded_usize");
+        let mut writer = BinaryWriter::new(&mut stream, Default::default());
+
+        let size = writer.write_7bit_encoded_usize(temp)?;
+        assert_eq!(size_expected, size);
+
+        let mut stream = create_reader_stream("7bit_encoded_usize");
+        let mut reader = BinaryReader::new(&mut stream, Default::default());
+
+        let read_temp = reader.read_7bit_encoded_usize()?;
+
+        assert_eq!(temp, read_temp);
+
+        cleanup("7bit_encoded_usize");
+    }
+    Ok(())
+}
+
+#[test]
 fn read_write_bytes() -> Result<()> {
     let count = 20;
 
@@ -453,6 +526,22 @@ fn read_write_string() -> Result<()> {
     assert_eq!(temp, string);
 
     cleanup("read_write_string");
+    Ok(())
+}
+
+#[test]
+fn read_write_7bit_encoded_string() -> Result<()> {
+    let temp = "Hello World";
+    let mut stream = create_writer_stream("read_7bit_encoded_len_string");
+    let mut writer = BinaryWriter::new(&mut stream, Default::default());
+    writer.write_7bit_encoded_len_string(temp.to_string())?;
+
+    let mut stream = create_reader_stream("read_7bit_encoded_len_string");
+    let mut reader = BinaryReader::new(&mut stream, Default::default());
+    let string = reader.read_7bit_encoded_len_string()?;
+    assert_eq!(temp, string);
+
+    cleanup("read_7bit_encoded_len_string");
     Ok(())
 }
 
@@ -538,7 +627,7 @@ fn write_bytes_with_value() -> Result<()> {
     let mut stream = MemoryStream::new();
     let mut writer = BinaryWriter::new(&mut stream, Default::default());
     writer.write_bytes_with_value(3, 1)?;
-    
+
     assert_eq!(3, writer.len()?);
     Ok(())
 }

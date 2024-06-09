@@ -105,12 +105,28 @@ impl<'a> BinaryReader<'a> {
         let chars = if cfg!(feature = "wasm32") {
             let str_len = self.read_u32()?;
             let mut chars: Vec<u8> = vec![0; str_len as usize];
-            self.stream.read(&mut chars)?;
+            self.stream.read_exact(&mut chars)?;
             chars
         } else {
             let str_len = self.read_usize()?;
             let mut chars: Vec<u8> = vec![0; str_len];
-            self.stream.read(&mut chars)?;
+            self.stream.read_exact(&mut chars)?;
+            chars
+        };
+        Ok(String::from_utf8(chars)?)
+    }
+
+    /// Read a 7bit encoded length-prefixed `String` from the stream.
+    pub fn read_7bit_encoded_len_string(&mut self) -> Result<String> {
+        let chars = if cfg!(feature = "wasm32") {
+            let str_len = self.read_7bit_encoded_u32()?;
+            let mut chars: Vec<u8> = vec![0; str_len as usize];
+            self.stream.read_exact(&mut chars)?;
+            chars
+        } else {
+            let str_len = self.read_7bit_encoded_usize()?;
+            let mut chars: Vec<u8> = vec![0; str_len];
+            self.stream.read_exact(&mut chars)?;
             chars
         };
         Ok(String::from_utf8(chars)?)
@@ -139,14 +155,14 @@ impl<'a> BinaryReader<'a> {
     /// Read a `f32` from the stream.
     pub fn read_f32(&mut self) -> Result<f32> {
         let mut buffer: [u8; 4] = [0; 4];
-        self.stream.read(&mut buffer)?;
+        self.stream.read_exact(&mut buffer)?;
         decode!(self.endian, buffer, f32);
     }
 
     /// Read a `f64` from the stream.
     pub fn read_f64(&mut self) -> Result<f64> {
         let mut buffer: [u8; 8] = [0; 8];
-        self.stream.read(&mut buffer)?;
+        self.stream.read_exact(&mut buffer)?;
         decode!(self.endian, buffer, f64);
     }
 
@@ -162,7 +178,7 @@ impl<'a> BinaryReader<'a> {
     #[cfg(not(target_arch = "wasm32"))]
     pub fn read_isize(&mut self) -> Result<isize> {
         let mut buffer: [u8; 8] = [0; 8];
-        self.stream.read(&mut buffer)?;
+        self.stream.read_exact(&mut buffer)?;
         decode!(self.endian, buffer, isize);
     }
 
@@ -178,70 +194,124 @@ impl<'a> BinaryReader<'a> {
     #[cfg(not(target_arch = "wasm32"))]
     pub fn read_usize(&mut self) -> Result<usize> {
         let mut buffer: [u8; 8] = [0; 8];
-        self.stream.read(&mut buffer)?;
+        self.stream.read_exact(&mut buffer)?;
         decode!(self.endian, buffer, usize);
     }
 
     /// Read a `u64` from the stream.
     pub fn read_u64(&mut self) -> Result<u64> {
         let mut buffer: [u8; 8] = [0; 8];
-        self.stream.read(&mut buffer)?;
+        self.stream.read_exact(&mut buffer)?;
         decode!(self.endian, buffer, u64);
     }
 
     /// Read an `i64` from the stream.
     pub fn read_i64(&mut self) -> Result<i64> {
         let mut buffer: [u8; 8] = [0; 8];
-        self.stream.read(&mut buffer)?;
+        self.stream.read_exact(&mut buffer)?;
         decode!(self.endian, buffer, i64);
     }
 
     /// Read a `u32` from the stream.
     pub fn read_u32(&mut self) -> Result<u32> {
         let mut buffer: [u8; 4] = [0; 4];
-        self.stream.read(&mut buffer)?;
+        self.stream.read_exact(&mut buffer)?;
         decode!(self.endian, buffer, u32);
     }
 
     /// Read an `i32` from the stream.
     pub fn read_i32(&mut self) -> Result<i32> {
         let mut buffer: [u8; 4] = [0; 4];
-        self.stream.read(&mut buffer)?;
+        self.stream.read_exact(&mut buffer)?;
         decode!(self.endian, buffer, i32);
     }
 
     /// Read a `u16` from the stream.
     pub fn read_u16(&mut self) -> Result<u16> {
         let mut buffer: [u8; 2] = [0; 2];
-        self.stream.read(&mut buffer)?;
+        self.stream.read_exact(&mut buffer)?;
         decode!(self.endian, buffer, u16);
     }
 
     /// Read an `i16` from the stream.
     pub fn read_i16(&mut self) -> Result<i16> {
         let mut buffer: [u8; 2] = [0; 2];
-        self.stream.read(&mut buffer)?;
+        self.stream.read_exact(&mut buffer)?;
         decode!(self.endian, buffer, i16);
     }
 
     /// Read a `u8` from the stream.
     pub fn read_u8(&mut self) -> Result<u8> {
         let mut buffer: [u8; 1] = [0; 1];
-        self.stream.read(&mut buffer)?;
+        self.stream.read_exact(&mut buffer)?;
         decode!(self.endian, buffer, u8);
     }
 
     /// Read an `i8` from the stream.
     pub fn read_i8(&mut self) -> Result<i8> {
         let mut buffer: [u8; 1] = [0; 1];
-        self.stream.read(&mut buffer)?;
+        self.stream.read_exact(&mut buffer)?;
         decode!(self.endian, buffer, i8);
+    }
+
+    /// Read 7bit encoded `i32` from the stream
+    pub fn read_7bit_encoded_i32(&mut self) -> Result<i32> {
+        let mut result: i32 = 0;
+        let mut shift: u32 = 0;
+
+        loop {
+            let byte = self.read_u8()?;
+
+            result |= (byte as i32 & 0x7F) << shift;
+            shift += 7;
+
+            if byte & 0x80 == 0 {
+                break;
+            }
+        }
+        Ok(result)
+    }
+
+    /// Read 7bit encoded `usize` from the stream
+    pub fn read_7bit_encoded_usize(&mut self) -> Result<usize> {
+        let mut result: usize = 0;
+        let mut shift: usize = 0;
+
+        loop {
+            let byte = self.read_u8()?;
+
+            result |= (byte as usize & 0x7F) << shift;
+            shift += 7;
+
+            if byte & 0x80 == 0 {
+                break;
+            }
+        }
+        Ok(result)
+    }
+
+    /// Read 7bit encoded `u32` from the stream
+    pub fn read_7bit_encoded_u32(&mut self) -> Result<u32> {
+        let mut result: u32 = 0;
+        let mut shift: usize = 0;
+
+        loop {
+            let byte = self.read_u8()?;
+
+            result |= (byte as u32 & 0x7F) << shift;
+            shift += 7;
+
+            if byte & 0x80 == 0 {
+                break;
+            }
+        }
+        Ok(result)
     }
 
     /// Read bytes from the stream into a buffer.
     pub fn read_bytes(&mut self, length: usize) -> Result<Vec<u8>> {
         let mut buffer: Vec<u8> = vec![0; length];
-        self.stream.read(&mut buffer)?;
+        self.stream.read_exact(&mut buffer)?;
         Ok(buffer)
     }
 }
@@ -283,6 +353,21 @@ impl<'a> BinaryWriter<'a> {
             self.write_u32(bytes.len() as u32)?;
         } else {
             self.write_usize(bytes.len())?;
+        }
+        Ok(self.stream.write(&bytes.to_vec())?)
+    }
+
+    /// Write a 7bit encoded length-prefixed `String` to the stream.
+    ///
+    /// The length of the `String` is written as a 7bit encoded `usize`
+    /// unless the `wasm32` feature is enabled
+    /// in which case the length is a 7bit encoded `u32`.
+    pub fn write_7bit_encoded_len_string<S: AsRef<str>>(&mut self, value: S) -> Result<usize> {
+        let bytes = value.as_ref().as_bytes();
+        if cfg!(feature = "wasm32") {
+            self.write_7bit_encoded_u32(bytes.len() as u32)?;
+        } else {
+            self.write_7bit_encoded_usize(bytes.len())?;
         }
         Ok(self.stream.write(&bytes.to_vec())?)
     }
@@ -368,6 +453,39 @@ impl<'a> BinaryWriter<'a> {
         let mut buff = Vec::with_capacity(count) as Vec<u8>;
         buff.resize(count, fill_value);
         Ok(self.write_bytes(buff)?)
+    }
+
+    /// Write 7bit encoded i32 to the stream
+    pub fn write_7bit_encoded_i32(&mut self, value: i32) -> Result<usize> {
+        self.write_7bit_encoded_u32(value as u32)
+    }
+
+    /// Write 7bit encoded u32 to the stream
+    pub fn write_7bit_encoded_u32(&mut self, value: u32) -> Result<usize> {
+        let mut v = value; // support negative numbers
+        let mut length: usize = 0;
+        while v >= 0x80 {
+            length += 1;
+            self.write_u8((v | 0x80) as u8)?;
+            v >>= 7;
+        }
+        self.write_u8(v as u8)?;
+
+        Ok(length + 1)
+    }
+
+    /// Write 7bit encoded usize to the stream
+    pub fn write_7bit_encoded_usize(&mut self, value: usize) -> Result<usize> {
+        let mut v = value; // support negative numbers
+        let mut length: usize = 0;
+        while v >= 0x80 {
+            length += 1;
+            self.write_u8((v | 0x80) as u8)?;
+            v >>= 7;
+        }
+        self.write_u8(v as u8)?;
+
+        Ok(length + 1)
     }
 
     /// Swap endianness to allow for reversing the writing mid stream
