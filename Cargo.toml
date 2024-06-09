@@ -1,7 +1,7 @@
 [package]
 name = "binary_rw"
 version = "4.0.4"
-authors = ["Mathias Danielsen <mathiasda98@hotmail.com>"]
+authors = ["Mathias Danielsen <mail@matda.me>"]
 edition = "2021"
 
 description = "A binary reader/writer library for rust"
