@@ -1,6 +1,6 @@
 [package]
 name = "binary_rw"
-version = "4.0.4"
+version = "4.1.0"
 authors = ["Mathias Danielsen <mail@matda.me>"]
 edition = "2021"
 
