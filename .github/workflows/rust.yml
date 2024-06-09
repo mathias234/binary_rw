@@ -4,7 +4,7 @@ name: Code coverage with grcov
 
 jobs:
   grcov:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         os:
@@ -54,7 +54,7 @@ jobs:
           path-to-lcov: ${{ steps.coverage.outputs.report }}
 
   grcov_finalize:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs: grcov
     steps:
       - name: Coveralls finalization
