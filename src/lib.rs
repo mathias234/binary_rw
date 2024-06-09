@@ -102,7 +102,7 @@ impl<'a> BinaryReader<'a> {
 
     /// Read a length-prefixed `String` from the stream.
     pub fn read_string(&mut self) -> Result<String> {
-        let chars = if cfg!(feature = "wasm32") {
+        let chars = if cfg!(any(feature = "wasm32", feature = "string_len_u32")) {
             let str_len = self.read_u32()?;
             let mut chars: Vec<u8> = vec![0; str_len as usize];
             self.stream.read_exact(&mut chars)?;
@@ -118,7 +118,7 @@ impl<'a> BinaryReader<'a> {
 
     /// Read a 7bit encoded length-prefixed `String` from the stream.
     pub fn read_7bit_encoded_len_string(&mut self) -> Result<String> {
-        let chars = if cfg!(feature = "wasm32") {
+        let chars = if cfg!(any(feature = "wasm32", feature = "string_len_u32")) {
             let str_len = self.read_7bit_encoded_u32()?;
             let mut chars: Vec<u8> = vec![0; str_len as usize];
             self.stream.read_exact(&mut chars)?;
@@ -345,11 +345,11 @@ impl<'a> BinaryWriter<'a> {
     /// Write a length-prefixed `String` to the stream.
     ///
     /// The length of the `String` is written as a `usize`
-    /// unless the `wasm32` feature is enabled
+    /// unless the `wasm32` or `string_len_u32` feature is enabled
     /// in which case the length is a `u32`.
     pub fn write_string<S: AsRef<str>>(&mut self, value: S) -> Result<usize> {
         let bytes = value.as_ref().as_bytes();
-        if cfg!(feature = "wasm32") {
+        if cfg!(any(feature = "wasm32", feature = "string_len_u32")) {
             self.write_u32(bytes.len() as u32)?;
         } else {
             self.write_usize(bytes.len())?;
@@ -360,11 +360,11 @@ impl<'a> BinaryWriter<'a> {
     /// Write a 7bit encoded length-prefixed `String` to the stream.
     ///
     /// The length of the `String` is written as a 7bit encoded `usize`
-    /// unless the `wasm32` feature is enabled
+    /// unless the `wasm32` or `string_len_u32` feature is enabled
     /// in which case the length is a 7bit encoded `u32`.
     pub fn write_7bit_encoded_len_string<S: AsRef<str>>(&mut self, value: S) -> Result<usize> {
         let bytes = value.as_ref().as_bytes();
-        if cfg!(feature = "wasm32") {
+        if cfg!(any(feature = "wasm32", feature = "string_len_u32")) {
             self.write_7bit_encoded_u32(bytes.len() as u32)?;
         } else {
             self.write_7bit_encoded_usize(bytes.len())?;

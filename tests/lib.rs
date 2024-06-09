@@ -109,6 +109,12 @@ fn borrow_test() -> Result<()> {
 
 #[test]
 fn slice_test() -> Result<()> {
+    let size: usize = if cfg!(any(feature = "wasm32", feature = "string_len_u32")) {
+        19
+    } else {
+        23
+    };
+
     let mut stream = MemoryStream::new();
     let mut writer = BinaryWriter::new(&mut stream, Endian::Big);
     writer.write_u32(42)?;
@@ -116,7 +122,7 @@ fn slice_test() -> Result<()> {
     writer.write_7bit_encoded_len_string("bar")?;
     writer.write_char('b')?;
 
-    assert_eq!(23, writer.len()?);
+    assert_eq!(size, writer.len()?);
 
     let buffer: Vec<u8> = stream.into();
 
@@ -138,7 +144,7 @@ fn slice_test() -> Result<()> {
     let value = reader.read_char()?;
     assert_eq!('b', value);
 
-    assert_eq!(23, reader.len()?);
+    assert_eq!(size, reader.len()?);
 
     Ok(())
 }

@@ -12,6 +12,7 @@ license = "MIT"
 
 [features]
 wasm32 = []
+string_len_u32 = []
 
 [dependencies]
 thiserror = "1"
