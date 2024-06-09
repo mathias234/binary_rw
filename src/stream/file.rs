@@ -72,7 +72,8 @@ impl Read for FileStream {
                 BinaryError::ReadPastEof,
             ));
         }
-        Ok(self.file.read(buffer)?)
+        
+        self.file.read(buffer)
     }
 }
 
