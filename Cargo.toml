@@ -1,6 +1,6 @@
 [package]
 name = "binary_rw"
-version = "4.0.4"
+version = "4.1.0"
 authors = ["Mathias Danielsen <mail@matda.me>"]
 edition = "2021"
 
@@ -11,8 +11,8 @@ keywords = ["binary", "reader", "writer"]
 license = "MIT"
 
 [features]
-wasm32 = []
-string_len_u32 = []
+wasm32 = [] # Uses u32 for usize operations, use string_len_u32 if you only want to affect how strings are encoded
+string_len_u32 = [] # Uses u32 for string lengths instead of usize
 
 [dependencies]
 thiserror = "1"

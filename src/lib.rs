@@ -6,6 +6,10 @@
 //!
 //! Otherwise string length is encoded using `usize` which
 //! may vary across platforms.
+//!
+//! `wasm32` will also change read_usize to read a 32bit integer
+//!
+//! If you only want the u32 strings please use `string_len_u32` feature
 #![deny(missing_docs)]
 use std::{
     borrow::Borrow,
