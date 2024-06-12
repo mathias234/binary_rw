@@ -202,6 +202,20 @@ impl<'a> BinaryReader<'a> {
         decode!(self.endian, buffer, usize);
     }
 
+    /// Read a `u128` from the stream.
+    pub fn read_u128(&mut self) -> Result<u128> {
+        let mut buffer: [u8; 16] = [0; 16];
+        self.stream.read_exact(&mut buffer)?;
+        decode!(self.endian, buffer, u128);
+    }
+
+    /// Read an `i128` from the stream.
+    pub fn read_i128(&mut self) -> Result<i128> {
+        let mut buffer: [u8; 16] = [0; 16];
+        self.stream.read_exact(&mut buffer)?;
+        decode!(self.endian, buffer, i128);
+    }
+
     /// Read a `u64` from the stream.
     pub fn read_u64(&mut self) -> Result<u64> {
         let mut buffer: [u8; 8] = [0; 8];
@@ -258,24 +272,6 @@ impl<'a> BinaryReader<'a> {
         decode!(self.endian, buffer, i8);
     }
 
-    /// Read 7bit encoded `i32` from the stream
-    pub fn read_7bit_encoded_i32(&mut self) -> Result<i32> {
-        let mut result: i32 = 0;
-        let mut shift: u32 = 0;
-
-        loop {
-            let byte = self.read_u8()?;
-
-            result |= (byte as i32 & 0x7F) << shift;
-            shift += 7;
-
-            if byte & 0x80 == 0 {
-                break;
-            }
-        }
-        Ok(result)
-    }
-
     /// Read 7bit encoded `usize` from the stream
     pub fn read_7bit_encoded_usize(&mut self) -> Result<usize> {
         let mut result: usize = 0;
@@ -285,6 +281,96 @@ impl<'a> BinaryReader<'a> {
             let byte = self.read_u8()?;
 
             result |= (byte as usize & 0x7F) << shift;
+            shift += 7;
+
+            if byte & 0x80 == 0 {
+                break;
+            }
+        }
+        Ok(result)
+    }
+
+    /// Read 7bit encoded `i64` from the stream
+    pub fn read_7bit_encoded_i64(&mut self) -> Result<i64> {
+        let mut result: i64 = 0;
+        let mut shift: u64 = 0;
+
+        loop {
+            let byte = self.read_u8()?;
+
+            result |= (byte as i64 & 0x7F) << shift;
+            shift += 7;
+
+            if byte & 0x80 == 0 {
+                break;
+            }
+        }
+        Ok(result)
+    }
+
+    /// Read 7bit encoded `u128` from the stream
+    pub fn read_7bit_encoded_u128(&mut self) -> Result<u128> {
+        let mut result: u128 = 0;
+        let mut shift: usize = 0;
+
+        loop {
+            let byte = self.read_u8()?;
+
+            result |= (byte as u128 & 0x7F) << shift;
+            shift += 7;
+
+            if byte & 0x80 == 0 {
+                break;
+            }
+        }
+        Ok(result)
+    }
+
+    /// Read 7bit encoded `i128` from the stream
+    pub fn read_7bit_encoded_i128(&mut self) -> Result<i128> {
+        let mut result: i128 = 0;
+        let mut shift: usize = 0;
+
+        loop {
+            let byte = self.read_u8()?;
+
+            result |= (byte as i128 & 0x7F) << shift;
+            shift += 7;
+
+            if byte & 0x80 == 0 {
+                break;
+            }
+        }
+        Ok(result)
+    }
+
+    /// Read 7bit encoded `u64` from the stream
+    pub fn read_7bit_encoded_u64(&mut self) -> Result<u64> {
+        let mut result: u64 = 0;
+        let mut shift: usize = 0;
+
+        loop {
+            let byte = self.read_u8()?;
+
+            result |= (byte as u64 & 0x7F) << shift;
+            shift += 7;
+
+            if byte & 0x80 == 0 {
+                break;
+            }
+        }
+        Ok(result)
+    }
+
+    /// Read 7bit encoded `i32` from the stream
+    pub fn read_7bit_encoded_i32(&mut self) -> Result<i32> {
+        let mut result: i32 = 0;
+        let mut shift: usize = 0;
+
+        loop {
+            let byte = self.read_u8()?;
+
+            result |= (byte as i32 & 0x7F) << shift;
             shift += 7;
 
             if byte & 0x80 == 0 {
@@ -412,8 +498,18 @@ impl<'a> BinaryWriter<'a> {
         encode!(self.endian, value.borrow(), self.stream);
     }
 
+    /// Write a `u128` to the stream.
+    pub fn write_u128<V: Borrow<u128>>(&mut self, value: V) -> Result<usize> {
+        encode!(self.endian, value.borrow(), self.stream);
+    }
+
     /// Write an `i64` to the stream.
     pub fn write_i64<V: Borrow<i64>>(&mut self, value: V) -> Result<usize> {
+        encode!(self.endian, value.borrow(), self.stream);
+    }
+
+    /// Write a `i128` to the stream.
+    pub fn write_i128<V: Borrow<i128>>(&mut self, value: V) -> Result<usize> {
         encode!(self.endian, value.borrow(), self.stream);
     }
 
@@ -466,6 +562,44 @@ impl<'a> BinaryWriter<'a> {
 
     /// Write 7bit encoded u32 to the stream
     pub fn write_7bit_encoded_u32(&mut self, value: u32) -> Result<usize> {
+        let mut v = value; // support negative numbers
+        let mut length: usize = 0;
+        while v >= 0x80 {
+            length += 1;
+            self.write_u8((v | 0x80) as u8)?;
+            v >>= 7;
+        }
+        self.write_u8(v as u8)?;
+
+        Ok(length + 1)
+    }
+
+    /// Write 7bit encoded i64 to the stream
+    pub fn write_7bit_encoded_i64(&mut self, value: i64) -> Result<usize> {
+        self.write_7bit_encoded_u64(value as u64)
+    }
+
+    /// Write 7bit encoded u64 to the stream
+    pub fn write_7bit_encoded_u64(&mut self, value: u64) -> Result<usize> {
+        let mut v = value; // support negative numbers
+        let mut length: usize = 0;
+        while v >= 0x80 {
+            length += 1;
+            self.write_u8((v | 0x80) as u8)?;
+            v >>= 7;
+        }
+        self.write_u8(v as u8)?;
+
+        Ok(length + 1)
+    }
+
+    /// Write 7bit encoded i128 to the stream
+    pub fn write_7bit_encoded_i128(&mut self, value: i128) -> Result<usize> {
+        self.write_7bit_encoded_u128(value as u128)
+    }
+
+    /// Write 7bit encoded u128 to the stream
+    pub fn write_7bit_encoded_u128(&mut self, value: u128) -> Result<usize> {
         let mut v = value; // support negative numbers
         let mut length: usize = 0;
         while v >= 0x80 {

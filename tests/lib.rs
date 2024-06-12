@@ -42,6 +42,11 @@ fn borrow_test() -> Result<()> {
     writer.write_i64(-64)?;
     writer.write_i64(&-64)?;
 
+    writer.write_u128(128)?;
+    writer.write_u128(&128)?;
+    writer.write_i128(-128)?;
+    writer.write_i128(&-128)?;
+
     writer.write_usize(64)?;
     writer.write_usize(&64)?;
     writer.write_isize(-64)?;
@@ -86,6 +91,11 @@ fn borrow_test() -> Result<()> {
     assert_eq!((64, 64), value);
     let value = (reader.read_i64()?, reader.read_i64()?);
     assert_eq!((-64, -64), value);
+
+    let value = (reader.read_u128()?, reader.read_u128()?);
+    assert_eq!((128, 128), value);
+    let value = (reader.read_i128()?, reader.read_i128()?);
+    assert_eq!((-128, -128), value);
 
     let value = (reader.read_usize()?, reader.read_usize()?);
     assert_eq!((64, 64), value);
@@ -254,6 +264,46 @@ fn read_write_test_usize() -> Result<()> {
 }
 
 #[test]
+fn read_write_test_i128() -> Result<()> {
+    let temp: i128 = 1 << 127;
+    let mut stream = create_writer_stream("i128");
+    let mut writer = BinaryWriter::new(&mut stream, Default::default());
+
+    writer.write_i128(temp)?;
+
+    let mut stream = create_reader_stream("i128");
+    let mut reader = BinaryReader::new(&mut stream, Default::default());
+
+    let read_temp = reader.read_i128()?;
+
+    assert_eq!(temp, read_temp);
+
+    cleanup("i128");
+
+    Ok(())
+}
+
+#[test]
+fn read_write_test_u128() -> Result<()> {
+    let temp: u128 = 1 << 127;
+    let mut stream = create_writer_stream("u128");
+    let mut writer = BinaryWriter::new(&mut stream, Default::default());
+
+    writer.write_u128(temp)?;
+
+    let mut stream = create_reader_stream("u128");
+    let mut reader = BinaryReader::new(&mut stream, Default::default());
+
+    let read_temp = reader.read_u128()?;
+
+    assert_eq!(temp, read_temp);
+
+    cleanup("u128");
+
+    Ok(())
+}
+
+#[test]
 fn read_write_test_i64() -> Result<()> {
     let temp: i64 = 50;
     let mut stream = create_writer_stream("i64");
@@ -409,6 +459,99 @@ fn read_write_test_u8() -> Result<()> {
 
     cleanup("u8");
 
+    Ok(())
+}
+
+#[test]
+fn read_write_test_7bit_encoded_u128() -> Result<()> {
+    let values: [(u128, usize); 6] = [(50, 1), (270, 2), (70000, 3), (2147483647, 5), (1 << 63, 10), (1 << 127, 19)];
+
+    for (temp, size_expected) in values {
+        let mut stream = create_writer_stream("7bit_encoded_u128");
+        let mut writer = BinaryWriter::new(&mut stream, Default::default());
+
+        let size = writer.write_7bit_encoded_u128(temp)?;
+        assert_eq!(size_expected, size);
+
+        let mut stream = create_reader_stream("7bit_encoded_u128");
+        let mut reader = BinaryReader::new(&mut stream, Default::default());
+
+        let read_temp = reader.read_7bit_encoded_u128()?;
+
+        assert_eq!(temp, read_temp);
+
+        cleanup("7bit_encoded_u128");
+    }
+    Ok(())
+}
+
+
+#[test]
+fn read_write_test_7bit_encoded_i128() -> Result<()> {
+    let values: [(i128, usize); 8] = [(-2147483647, 19), (-100, 19), (50, 1), (270, 2), (70000, 3), (2147483647, 5), (1 << 63, 10), (1 << 127, 19)];
+    for (temp, size_expected) in values {
+
+        let mut stream = create_writer_stream("7bit_encoded_i128");
+        let mut writer = BinaryWriter::new(&mut stream, Default::default());
+
+        let size = writer.write_7bit_encoded_i128(temp)?;
+        assert_eq!(size_expected, size);
+
+        let mut stream = create_reader_stream("7bit_encoded_i128");
+        let mut reader = BinaryReader::new(&mut stream, Default::default());
+
+        let read_temp = reader.read_7bit_encoded_i128()?;
+
+        assert_eq!(temp, read_temp);
+
+        cleanup("7bit_encoded_i128");
+    }
+    Ok(())
+}
+
+#[test]
+fn read_write_test_7bit_encoded_u64() -> Result<()> {
+    let values: [(u64, usize); 5] = [(50, 1), (270, 2), (70000, 3), (2147483647, 5), (1 << 63, 10)];
+
+    for (temp, size_expected) in values {
+        let mut stream = create_writer_stream("7bit_encoded_u64");
+        let mut writer = BinaryWriter::new(&mut stream, Default::default());
+
+        let size = writer.write_7bit_encoded_u64(temp)?;
+        assert_eq!(size_expected, size);
+
+        let mut stream = create_reader_stream("7bit_encoded_u64");
+        let mut reader = BinaryReader::new(&mut stream, Default::default());
+
+        let read_temp = reader.read_7bit_encoded_u64()?;
+
+        assert_eq!(temp, read_temp);
+
+        cleanup("7bit_encoded_u64");
+    }
+    Ok(())
+}
+
+#[test]
+fn read_write_test_7bit_encoded_i64() -> Result<()> {
+    let values: [(i64, usize); 7] = [(-2147483647, 10), (-100, 10), (50, 1), (270, 2), (70000, 3), (2147483647, 5), (1 << 63, 10)];
+
+    for (temp, size_expected) in values {
+        let mut stream = create_writer_stream("7bit_encoded_i64");
+        let mut writer = BinaryWriter::new(&mut stream, Default::default());
+
+        let size = writer.write_7bit_encoded_i64(temp)?;
+        assert_eq!(size_expected, size);
+
+        let mut stream = create_reader_stream("7bit_encoded_i64");
+        let mut reader = BinaryReader::new(&mut stream, Default::default());
+
+        let read_temp = reader.read_7bit_encoded_i64()?;
+
+        assert_eq!(temp, read_temp);
+
+        cleanup("7bit_encoded_i64");
+    }
     Ok(())
 }
 
